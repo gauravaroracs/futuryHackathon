@@ -12,7 +12,7 @@
   }
   html,body{height:100%}
   body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased}
-  .wrap{max-width:840px; margin:0 auto; padding:16px}
+  .wrap{max-width:900px; margin:0 auto; padding:16px}
   header{display:flex; align-items:center; justify-content:space-between; margin:2px 0 14px}
   header h1{font-size:18px; margin:0; font-weight:800; letter-spacing:.2px}
   .brand{display:flex; gap:8px; align-items:center}
@@ -21,7 +21,7 @@
   fieldset{border:0; margin:0; padding:0}
   legend{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
   .sub{font-size:12px; color:var(--muted); font-weight:700; margin:10px 0 6px}
-  .row{display:flex; flex-wrap:wrap; gap:8px}
+  .row{display:flex; flex-wrap:wrap; gap:12px}
   .group{margin-top:6px}
   .chip{appearance:none; border:1.5px solid var(--stroke); background:transparent; color:var(--ink); padding:10px 12px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; min-height:44px; min-width:44px; display:inline-flex; align-items:center; gap:8px}
   .chip[aria-checked="true"], .chip[aria-pressed="true"], .chip.is-on{background:var(--green); color:var(--green-ink); border-color:var(--green)}
@@ -41,12 +41,16 @@
   .error{color:var(--red); font-weight:800; font-size:12px; margin-top:6px}
   .error[hidden]{display:none}
   .help{color:var(--muted); font-size:12px}
-  .preview{white-space:pre-wrap; word-break:break-word; background:#0c1117; border:1px dashed var(--stroke); border-radius:12px; padding:12px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
+  .preview{white-space:pre-wrap; word-break:break-word; background:#0c1117; border:1px dashed var(--stroke); border-radius:12px; padding:12px; font-family:ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
   .status{font-size:12px; font-weight:800; margin-top:6px}
   .status.ok{color:var(--green)}
   .status.fail{color:var(--red)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
   .stack{display:grid; gap:12px}
+  /* rec cards */
+  .recs{display:grid; gap:12px}
+  .rec{background:#0f141b; border:1px solid var(--stroke); border-radius:12px; padding:12px; display:grid; gap:8px}
+  .pill{padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
 </style>
 </head>
 <body>
@@ -116,7 +120,6 @@
       <section class="card" aria-labelledby="energy-h">
         <fieldset role="group" aria-label="Energy">
           <legend id="energy-h">Energy</legend>
-
           <div class="group">
             <div class="sub">Heating</div>
             <div class="row" id="heating" role="radiogroup" aria-label="Heating" data-select="single">
@@ -126,7 +129,6 @@
               <button type="button" class="chip" role="radio" aria-checked="false" data-value="electric" title="Electric">Electric</button>
             </div>
           </div>
-
           <div class="group">
             <div class="sub">Tariff</div>
             <div class="row" id="tariff" role="radiogroup" aria-label="Tariff" data-select="single">
@@ -134,14 +136,11 @@
               <button type="button" class="chip" role="radio" aria-checked="false" data-value="dynamic" title="Dynamic">Dynamic</button>
             </div>
           </div>
-
           <div class="group">
             <div class="sub">Smart Meter</div>
             <div class="inline" aria-label="Smart Meter">
               <button type="button" id="smartMeter" role="switch" aria-checked="false" class="switch" title="Smart Meter">
-                <span>Smart</span>
-                <span aria-hidden="true">•</span>
-                <span id="smartLabel">Off</span>
+                <span>Smart</span><span aria-hidden="true">•</span><span id="smartLabel">Off</span>
               </button>
             </div>
           </div>
@@ -244,22 +243,10 @@
         <fieldset role="group" aria-label="Consent">
           <legend id="consent-h">Consent</legend>
           <div class="inline" aria-describedby="err-consent">
-            <label class="checkbox" title="Photos">
-              <input type="checkbox" value="photos" id="consent-photos" />
-              <span>Photos</span>
-            </label>
-            <label class="checkbox" title="Receipts">
-              <input type="checkbox" value="receipts" id="consent-receipts" />
-              <span>Receipts</span>
-            </label>
-            <label class="checkbox" title="App Exports">
-              <input type="checkbox" value="appExports" id="consent-exports" />
-              <span>App Exports</span>
-            </label>
-            <label class="checkbox" title="I agree">
-              <input type="checkbox" required id="agree" />
-              <span>I agree</span>
-            </label>
+            <label class="checkbox" title="Photos"><input type="checkbox" value="photos" id="consent-photos" /><span>Photos</span></label>
+            <label class="checkbox" title="Receipts"><input type="checkbox" value="receipts" id="consent-receipts" /><span>Receipts</span></label>
+            <label class="checkbox" title="App Exports"><input type="checkbox" value="appExports" id="consent-exports" /><span>App Exports</span></label>
+            <label class="checkbox" title="I agree"><input type="checkbox" required id="agree" /><span>I agree</span></label>
           </div>
           <div id="err-consent" class="error" aria-live="polite" hidden></div>
           <div id="saveStatus" class="status" aria-live="polite"></div>
@@ -271,6 +258,7 @@
         <button type="submit" class="btn primary" id="submitBtn" title="Submit">Submit</button>
       </div>
 
+      <!-- PREVIEW -->
       <section id="previewCard" class="card" hidden>
         <legend class="sr">Preview</legend>
         <div class="inline" style="justify-content:space-between; align-items:center; margin-bottom:8px">
@@ -279,6 +267,16 @@
         </div>
         <div id="preview" class="preview" aria-live="polite"></div>
       </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section id="recsCard" class="card" hidden>
+        <legend class="sr">Recommendations</legend>
+        <div class="inline" style="justify-content:space-between; align-items:center; margin-bottom:8px">
+          <strong>Top Picks</strong>
+          <small class="help">auto-matched from your persona</small>
+        </div>
+        <div id="recs" class="recs"></div>
+      </section>
     </form>
   </div>
 
@@ -286,33 +284,29 @@
 <script type="module">
   // === Firebase Web SDK (v10) ===
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import {
+    getFirestore, collection, addDoc, serverTimestamp,
+    getDocs, query, where, orderBy, limit, doc, setDoc
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // 1) Paste your config from Firebase Console → Project settings → General → Your apps → Web app
-  //    Keep keys as-is (they are safe for client init).
+  // ---- CONFIG: your Firebase project ----
   const firebaseConfig = {
-  apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
-  authDomain: "emission-impossible-6b979.firebaseapp.com",
-  projectId: "emission-impossible-6b979",
-  storageBucket: "emission-impossible-6b979.firebasestorage.app",
-  messagingSenderId: "840522443479",
-  appId: "1:840522443479:web:b2efc2bcf3ef45b6799e92",
-  measurementId: "G-0GTRNT5ZY7"
-};
+    apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
+    authDomain: "emission-impossible-6b979.firebaseapp.com",
+    projectId: "emission-impossible-6b979",
+    storageBucket: "emission-impossible-6b979.firebasestorage.app",
+    messagingSenderId: "840522443479",
+    appId: "1:840522443479:web:b2efc2bcf3ef45b6799e92",
+    measurementId: "G-0GTRNT5ZY7"
+  };
 
-  // Guard init: if not replaced, we skip saving but still show preview
+  // Init Firebase
   let db = null;
   try {
-    if(!firebaseConfig.apiKey.startsWith('TODO')){
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-      console.log('Firebase initialized');
-    } else {
-      console.warn('Firebase config not set. Data will not be saved.');
-    }
-  } catch (e){
-    console.error('Firebase init error', e);
-  }
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log('Firebase initialized');
+  } catch (e){ console.error('Firebase init error', e); }
 
   // === UI helpers ===
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -433,11 +427,106 @@
     el.className = 'status ' + (type||'');
   }
 
-  async function saveToFirestore(data){
-    if(!db){ throw new Error('Firebase not configured'); }
+  async function savePersona(data){
+    if(!db) throw new Error('Firebase not configured');
     const payload = { ...data, createdAt: serverTimestamp() };
     const ref = await addDoc(collection(db, 'interests'), payload);
     return ref.id;
+  }
+
+  // ---------- Matching helpers ----------
+  function emailKey(email){ return encodeURIComponent((email||'').trim().toLowerCase()); }
+
+  async function fetchLatestPersonaByEmail(email){
+    try{
+      const qRef = query(
+        collection(db, 'interests'),
+        where('email','==', email),
+        orderBy('createdAt','desc'),
+        limit(1)
+      );
+      const snap = await getDocs(qRef);
+      if (snap.empty) return null;
+      return snap.docs[0].data();
+    } catch(err){
+      // Fallback if composite index is missing: fetch without orderBy and pick newest by timestamp
+      console.warn('persona query fallback', err);
+      const qRef2 = query(collection(db,'interests'), where('email','==', email));
+      const snap2 = await getDocs(qRef2);
+      if (snap2.empty) return null;
+      const docs = snap2.docs.map(d=>d.data());
+      docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      return docs[0];
+    }
+  }
+
+  async function fetchActiveChallenges(){
+    const qRef = query(collection(db,'challenges'), where('active','==', true));
+    const snap = await getDocs(qRef);
+    return snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  }
+
+  function toFeatureSet(persona){
+    return new Set([
+      ...(persona?.devices || []),
+      persona?.energy?.heating,
+      ...(persona?.interests || []),
+      persona?.weighting
+    ].filter(Boolean));
+  }
+
+  function scoreChallenge(ch, have){
+    const requires = ch.requires || [];
+    const tags = ch.tags || [];
+    const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
+    const effort = Number(ch.effort ?? 1);
+    if (requires.some(r => !have.has(r))) return null;
+    let rel = 0;
+    for (const r of requires) if (have.has(r)) rel += 1;
+    for (const t of tags)     if (have.has(t)) rel += 1;
+    const score = rel * impact - 0.7 * effort;
+    const why = [
+      requires.length ? `needs: ${requires.join(',')}` : null,
+      tags.length ? `tags: ${tags.join(',')}` : null
+    ].filter(Boolean).join(' | ');
+    return { challengeId: ch.id, title: ch.title || ch.id, impact, effort, score, why, explanation: ch.explanation || ch.explain || null };
+  }
+
+  async function rankAndWriteRecommendations(email){
+    const persona = await fetchLatestPersonaByEmail(email);
+    if (!persona) throw new Error('No persona found for this email');
+    const have = toFeatureSet(persona);
+    const challenges = await fetchActiveChallenges();
+    const ranked = challenges.map(c => scoreChallenge(c, have))
+      .filter(Boolean)
+      .sort((a,b)=> b.score - a.score)
+      .slice(0,3);
+    const bucketRef = doc(db, 'recommendations', emailKey(email));
+    for (const it of ranked){
+      await setDoc(doc(bucketRef, 'items', it.challengeId), { ...it, createdAt: serverTimestamp() }, { merge:true });
+    }
+    return ranked;
+  }
+
+  function renderRecommendations(items){
+    const card = document.getElementById('recsCard');
+    const grid = document.getElementById('recs');
+    grid.innerHTML = '';
+    items.forEach(it=>{
+      const d = document.createElement('div');
+      d.className = 'rec';
+      d.innerHTML = `
+        <div style="display:grid; gap:6px">
+          <strong>${it.title}</strong>
+          <div class="inline">
+            <span class="pill" title="Impact (kgCO₂ est)">Impact</span><span>${Math.round(it.impact)}</span>
+            <span class="pill" title="Effort (1 low – 5 high)">Effort</span><span>${it.effort}</span>
+          </div>
+          <small class="help">Why: ${it.why || '—'}</small>
+        </div>`;
+      grid.appendChild(d);
+    });
+    card.hidden = items.length === 0;
   }
 
   function copyJSON(){
@@ -457,13 +546,14 @@
     const sw = $('#smartMeter'); sw.setAttribute('aria-checked','false'); sw.classList.remove('is-on'); $('#smartLabel').textContent = 'Off';
     $('#err-email').hidden = true; $('#err-consent').hidden = true;
     $('#previewCard').hidden = true; $('#preview').textContent = '';
+    $('#recsCard').hidden = true; $('#recs').innerHTML = '';
     setStatus('', '');
   }
 
-  // Init
+  // Init UI
   initChips(); initSwitch();
 
-  // Submit flow → validate → preview → save to Firestore (if configured)
+  // Submit flow → validate → preview → save persona → match → write recs → render
   const submitBtn = $('#submitBtn');
   $('#form').addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -473,11 +563,14 @@
 
     submitBtn.disabled = true; setStatus('Saving…', '');
     try{
-      const id = await saveToFirestore(data);
+      const id = await savePersona(data);
       setStatus('Saved ✓ id: '+id, 'ok');
+      const items = await rankAndWriteRecommendations(data.email);
+      renderRecommendations(items);
+      setStatus('Saved ✓ + matched', 'ok');
     } catch(err){
       console.warn(err);
-      setStatus('Not saved (configure Firebase)', 'fail');
+      setStatus('Error: '+ (err.message || err), 'fail');
     } finally {
       submitBtn.disabled = false;
     }
