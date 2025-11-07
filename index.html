@@ -42,6 +42,9 @@
   .error[hidden]{display:none}
   .help{color:var(--muted); font-size:12px}
   .preview{white-space:pre-wrap; word-break:break-word; background:#0c1117; border:1px dashed var(--stroke); border-radius:12px; padding:12px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
+  .status{font-size:12px; font-weight:800; margin-top:6px}
+  .status.ok{color:var(--green)}
+  .status.fail{color:var(--red)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
   .stack{display:grid; gap:12px}
 </style>
@@ -259,6 +262,7 @@
             </label>
           </div>
           <div id="err-consent" class="error" aria-live="polite" hidden></div>
+          <div id="saveStatus" class="status" aria-live="polite"></div>
         </fieldset>
       </section>
 
@@ -278,8 +282,39 @@
     </form>
   </div>
 
-<script>
-(function(){
+<!-- Firebase + App code -->
+<script type="module">
+  // === Firebase Web SDK (v10) ===
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  // 1) Paste your config from Firebase Console → Project settings → General → Your apps → Web app
+  //    Keep keys as-is (they are safe for client init).
+  const firebaseConfig = {
+  apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
+  authDomain: "emission-impossible-6b979.firebaseapp.com",
+  projectId: "emission-impossible-6b979",
+  storageBucket: "emission-impossible-6b979.firebasestorage.app",
+  messagingSenderId: "840522443479",
+  appId: "1:840522443479:web:b2efc2bcf3ef45b6799e92",
+  measurementId: "G-0GTRNT5ZY7"
+};
+
+  // Guard init: if not replaced, we skip saving but still show preview
+  let db = null;
+  try {
+    if(!firebaseConfig.apiKey.startsWith('TODO')){
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      console.log('Firebase initialized');
+    } else {
+      console.warn('Firebase config not set. Data will not be saved.');
+    }
+  } catch (e){
+    console.error('Firebase init error', e);
+  }
+
+  // === UI helpers ===
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
@@ -330,7 +365,7 @@
     const email = $('#email').value.trim();
     const smart = $('#smartMeter').getAttribute('aria-checked') === 'true';
 
-    const data = {
+    return {
       email: email || '',
       profile: {
         region: valSingle('region') || null,
@@ -359,7 +394,6 @@
       }),
       timestamp: new Date().toISOString()
     };
-    return data;
   }
 
   function validate(){
@@ -389,10 +423,21 @@
   }
 
   function showPreview(data){
-    const card = $('#previewCard');
-    const pre = $('#preview');
-    pre.textContent = JSON.stringify(data); // compact
-    card.hidden = false;
+    $('#preview').textContent = JSON.stringify(data); // compact
+    $('#previewCard').hidden = false;
+  }
+
+  function setStatus(msg, type){
+    const el = $('#saveStatus');
+    el.textContent = msg;
+    el.className = 'status ' + (type||'');
+  }
+
+  async function saveToFirestore(data){
+    if(!db){ throw new Error('Firebase not configured'); }
+    const payload = { ...data, createdAt: serverTimestamp() };
+    const ref = await addDoc(collection(db, 'interests'), payload);
+    return ref.id;
   }
 
   function copyJSON(){
@@ -412,14 +457,34 @@
     const sw = $('#smartMeter'); sw.setAttribute('aria-checked','false'); sw.classList.remove('is-on'); $('#smartLabel').textContent = 'Off';
     $('#err-email').hidden = true; $('#err-consent').hidden = true;
     $('#previewCard').hidden = true; $('#preview').textContent = '';
+    setStatus('', '');
   }
 
+  // Init
   initChips(); initSwitch();
 
-  $('#form').addEventListener('submit', (e)=>{ e.preventDefault(); if(!validate()) return; showPreview(serialize()); });
+  // Submit flow → validate → preview → save to Firestore (if configured)
+  const submitBtn = $('#submitBtn');
+  $('#form').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if(!validate()) return;
+    const data = serialize();
+    showPreview(data);
+
+    submitBtn.disabled = true; setStatus('Saving…', '');
+    try{
+      const id = await saveToFirestore(data);
+      setStatus('Saved ✓ id: '+id, 'ok');
+    } catch(err){
+      console.warn(err);
+      setStatus('Not saved (configure Firebase)', 'fail');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
   $('#copyBtn').addEventListener('click', copyJSON);
   $('#resetBtn').addEventListener('click', resetAll);
-})();
 </script>
 </body>
 </html>
