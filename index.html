@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Green Impact Wallet — Interests & Persona</title>
+<title>Green Impact Wallet — Persona (Lite)</title>
 <style>
   :root{
     --bg:#0b0e11; --card:#131820; --ink:#f7fafc; --muted:#a8b3bf;
@@ -20,20 +20,13 @@
   .card{background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:14px}
   fieldset{border:0; margin:0; padding:0}
   legend{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
-  .sub{font-size:12px; color:var(--muted); font-weight:700; margin:10px 0 6px}
   .row{display:flex; flex-wrap:wrap; gap:12px}
-  .group{margin-top:6px}
   .chip{appearance:none; border:1.5px solid var(--stroke); background:transparent; color:var(--ink); padding:10px 12px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; min-height:44px; min-width:44px; display:inline-flex; align-items:center; gap:8px}
-  .chip[aria-checked="true"], .chip[aria-pressed="true"], .chip.is-on{background:var(--green); color:var(--green-ink); border-color:var(--green)}
+  .chip[aria-checked="true"], .chip[aria-pressed="true"]{background:var(--green); color:var(--green-ink); border-color:var(--green)}
   .chip:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
-  .input{display:flex; gap:8px; align-items:center}
   input[type=email]{flex:1; background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); padding:12px 14px; border-radius:12px; font-size:15px; min-height:48px}
   input[type=email]:focus{outline:3px solid var(--focus); outline-offset:2px}
   .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-  label.checkbox{display:inline-flex; gap:8px; align-items:center; cursor:pointer; font-weight:700}
-  input[type=checkbox]{width:20px; height:20px}
-  .switch{border:1.5px solid var(--stroke); border-radius:999px; padding:6px 12px; min-height:44px; min-width:72px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:transparent; font-weight:800}
-  .switch.is-on{background:var(--green); color:var(--green-ink); border-color:var(--green)}
   .tools{position:sticky; bottom:8px; z-index:5; display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
   .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px}
   .btn.primary{background:var(--green); color:var(--green-ink); border-color:var(--green)}
@@ -41,14 +34,19 @@
   .error{color:var(--red); font-weight:800; font-size:12px; margin-top:6px}
   .error[hidden]{display:none}
   .help{color:var(--muted); font-size:12px}
-  .preview{white-space:pre-wrap; word-break:break-word; background:#0c1117; border:1px dashed var(--stroke); border-radius:12px; padding:12px; font-family:ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px}
   .status{font-size:12px; font-weight:800; margin-top:6px}
   .status.ok{color:var(--green)}
   .status.fail{color:var(--red)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
-  .stack{display:grid; gap:12px}
-  /* rec cards */
-  .recs{display:grid; gap:12px}
+
+  /* Loader overlay */
+  .loader{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); backdrop-filter:blur(2px); z-index:50}
+  .loader.show{display:grid}
+  .spinner{width:48px; height:48px; border-radius:999px; border:4px solid var(--stroke); border-top-color:var(--green); animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Results */
+  .grid{display:grid; gap:12px}
   .rec{background:#0f141b; border:1px solid var(--stroke); border-radius:12px; padding:12px; display:grid; gap:8px}
   .pill{padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
 </style>
@@ -56,240 +54,112 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="brand"><span class="badge" aria-hidden="true">Green</span><h1>Interests & Persona</h1></div>
+      <div class="brand"><span class="badge" aria-hidden="true">Green</span><h1>Persona</h1></div>
       <small class="help">≤ 60s</small>
     </header>
 
-    <form id="form" class="stack" novalidate>
-      <!-- BASICS -->
-      <section class="card" aria-labelledby="basics-h">
-        <fieldset role="group" aria-label="Basics">
-          <legend id="basics-h">Basics</legend>
-
-          <div class="input" title="Work email">
-            <label for="email" class="sr">Email</label>
-            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email*" aria-describedby="err-email" required />
-          </div>
-          <div id="err-email" class="error" aria-live="polite" hidden></div>
-
-          <div class="group">
-            <div class="sub">Age</div>
-            <div class="row" id="age" role="radiogroup" aria-label="Age" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="18-24" title="18–24">18–24</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="25-34" title="25–34">25–34</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="35-44" title="35–44">35–44</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="45-54" title="45–54">45–54</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="55+" title="55+">55+</button>
+    <!-- ====== View: Setup (5 key fields) ====== -->
+    <main id="setupView">
+      <form id="form" class="grid" novalidate>
+        <section class="card">
+          <fieldset role="group" aria-label="Basics">
+            <legend>Basics</legend>
+            <div class="inline">
+              <label for="email" class="sr">Email</label>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email*" aria-describedby="err-email" required />
             </div>
-          </div>
+            <div id="err-email" class="error" aria-live="polite" hidden></div>
+          </fieldset>
+        </section>
 
-          <div class="group">
-            <div class="sub">Region</div>
-            <div class="row" id="region" role="radiogroup" aria-label="Region" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="HE" title="HE — Hessen">Hessen (HE)</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="BY" title="BY — Bayern">Bayern (BY)</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="BW" title="BW — Baden‑Württemberg">Baden‑Württ. (BW)</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="NRW" title="NRW — Nordrhein‑Westfalen">NRW</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="BE" title="BE — Berlin">Berlin (BE)</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="HH" title="HH — Hamburg">Hamburg (HH)</button>
-            </div>
-          </div>
-
-          <div class="group">
-            <div class="sub">Household</div>
-            <div class="row" id="household" role="radiogroup" aria-label="Household" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="1" title="1 person">1</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="2" title="2 persons">2</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="3" title="3 persons">3</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="4+" title="4 or more">4+</button>
-            </div>
-          </div>
-
-          <div class="group">
-            <div class="sub">Housing</div>
-            <div class="row" id="housing" role="radiogroup" aria-label="Housing" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="apartment" title="Apartment">Apartment</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="house" title="House">House</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="student" title="Student">Student</button>
-            </div>
-          </div>
-        </fieldset>
-      </section>
-
-      <!-- ENERGY -->
-      <section class="card" aria-labelledby="energy-h">
-        <fieldset role="group" aria-label="Energy">
-          <legend id="energy-h">Energy</legend>
-          <div class="group">
-            <div class="sub">Heating</div>
-            <div class="row" id="heating" role="radiogroup" aria-label="Heating" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="gas" title="Gas">Gas</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="district" title="District">District</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="heat_pump" title="Heat Pump">Heat Pump</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="electric" title="Electric">Electric</button>
-            </div>
-          </div>
-          <div class="group">
-            <div class="sub">Tariff</div>
-            <div class="row" id="tariff" role="radiogroup" aria-label="Tariff" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="fixed" title="Fixed">Fixed</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="dynamic" title="Dynamic">Dynamic</button>
-            </div>
-          </div>
-          <div class="group">
-            <div class="sub">Smart Meter</div>
-            <div class="inline" aria-label="Smart Meter">
-              <button type="button" id="smartMeter" role="switch" aria-checked="false" class="switch" title="Smart Meter">
-                <span>Smart</span><span aria-hidden="true">•</span><span id="smartLabel">Off</span>
-              </button>
-            </div>
-          </div>
-        </fieldset>
-      </section>
-
-      <!-- DEVICES -->
-      <section class="card" aria-labelledby="devices-h">
-        <fieldset role="group" aria-label="Devices">
-          <legend id="devices-h">Devices</legend>
-          <div class="row" id="devices" role="group" aria-label="Devices" data-select="multi">
-            <button type="button" class="chip" aria-pressed="false" data-value="ev" title="EV">EV</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="pv" title="PV/Balcony">PV</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="heat_pump" title="Heat Pump">HP</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="smart_plugs" title="Smart Plugs">Plugs</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="smart_thermostat" title="Smart Thermostat">Thermo</button>
-          </div>
-        </fieldset>
-      </section>
-
-      <!-- ROUTINE -->
-      <section class="card" aria-labelledby="routine-h">
-        <fieldset role="group" aria-label="Routine">
-          <legend id="routine-h">Routine</legend>
-          <div class="group">
-            <div class="sub">Commute</div>
-            <div class="row" id="commute" role="group" aria-label="Commute Days" data-select="multi">
-              <button type="button" class="chip" aria-pressed="false" data-value="Mon" title="Monday">Mon</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="Tue" title="Tuesday">Tue</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="Wed" title="Wednesday">Wed</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="Thu" title="Thursday">Thu</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="Fri" title="Friday">Fri</button>
-            </div>
-          </div>
-          <div class="group">
-            <div class="sub">Home Hours</div>
-            <div class="row" id="homeHours" role="radiogroup" aria-label="Home Hours" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="Evening" title="Evening">Evening</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="Night" title="Night">Night</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="Mixed" title="Mixed">Mixed</button>
-            </div>
-          </div>
-        </fieldset>
-      </section>
-
-      <!-- INTERESTS -->
-      <section class="card" aria-labelledby="interests-h">
-        <fieldset role="group" aria-label="Interests">
-          <legend id="interests-h">Interests</legend>
-          <div class="row" id="interests" role="group" aria-label="Interests" data-select="multi">
-            <button type="button" class="chip" aria-pressed="false" data-value="mobility" title="Mobility">Mobility</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="home-efficiency" title="Home Efficiency">Home Efficiency</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="low-effort" title="Low Effort">Low Effort</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="cost-saving" title="Cost Saving">Cost Saving</button>
-            <button type="button" class="chip" aria-pressed="false" data-value="learning" title="Learning">Learning</button>
-          </div>
-        </fieldset>
-      </section>
-
-      <!-- GOALS & CONSTRAINTS -->
-      <section class="stack">
-        <section class="card" aria-labelledby="goals-h">
-          <fieldset role="group" aria-label="Goals">
-            <legend id="goals-h">Goals</legend>
-            <div class="row" id="goals" role="group" aria-label="Goals" data-select="multi">
-              <button type="button" class="chip" aria-pressed="false" data-value="reduce-co2" title="Reduce CO2">Reduce CO₂</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="save-money" title="Save Money">Save Money</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="get-rewards" title="Get Rewards">Get Rewards</button>
+        <section class="card">
+          <fieldset role="group" aria-label="Energy">
+            <legend>Heating</legend>
+            <div id="heating" class="row" role="radiogroup" aria-label="Heating" data-select="single">
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="gas">Gas</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="district">District</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="heat_pump">Heat Pump</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="electric">Electric</button>
             </div>
           </fieldset>
         </section>
-        <section class="card" aria-labelledby="constraints-h">
-          <fieldset role="group" aria-label="Constraints">
-            <legend id="constraints-h">Constraints</legend>
-            <div class="row" id="constraints" role="group" aria-label="Constraints" data-select="multi">
-              <button type="button" class="chip" aria-pressed="false" data-value="landlord" title="Landlord">Landlord</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="low-budget" title="Low Budget">Low Budget</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="accessibility" title="Accessibility">Accessibility</button>
-              <button type="button" class="chip" aria-pressed="false" data-value="time-poor" title="Time‑Poor">Time‑Poor</button>
+
+        <section class="card">
+          <fieldset role="group" aria-label="Devices">
+            <legend>Devices</legend>
+            <div id="devices" class="row" role="group" aria-label="Devices" data-select="multi">
+              <button type="button" class="chip" aria-pressed="false" data-value="ev">EV</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="pv">PV</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="heat_pump">HP</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="smart_plugs">Plugs</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="smart_thermostat">Thermo</button>
             </div>
           </fieldset>
         </section>
-      </section>
 
-      <!-- PREFERENCES -->
-      <section class="card" aria-labelledby="pref-h">
-        <fieldset role="group" aria-label="Preferences">
-          <legend id="pref-h">Preferences</legend>
-          <div class="row" id="weighting" role="radiogroup" aria-label="Weighting" data-select="single">
-            <button type="button" class="chip" role="radio" aria-checked="false" data-value="balanced" title="Balanced">Balanced</button>
-            <button type="button" class="chip" role="radio" aria-checked="false" data-value="low-effort" title="Low Effort">Low Effort</button>
-            <button type="button" class="chip" role="radio" aria-checked="false" data-value="high-impact" title="High Impact">High Impact</button>
-            <button type="button" class="chip" role="radio" aria-checked="false" data-value="cost-saving" title="Cost Saving">Cost Saving</button>
-          </div>
-        </fieldset>
-      </section>
+        <section class="card">
+          <fieldset role="group" aria-label="Interests">
+            <legend>Interests</legend>
+            <div id="interests" class="row" role="group" aria-label="Interests" data-select="multi">
+              <button type="button" class="chip" aria-pressed="false" data-value="mobility">Mobility</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="home-efficiency">Home Efficiency</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="low-effort">Low Effort</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="cost-saving">Cost Saving</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="learning">Learning</button>
+            </div>
+          </fieldset>
+        </section>
 
-      <!-- CONSENT -->
-      <section class="card" aria-labelledby="consent-h">
-        <fieldset role="group" aria-label="Consent">
-          <legend id="consent-h">Consent</legend>
-          <div class="inline" aria-describedby="err-consent">
-            <label class="checkbox" title="Photos"><input type="checkbox" value="photos" id="consent-photos" /><span>Photos</span></label>
-            <label class="checkbox" title="Receipts"><input type="checkbox" value="receipts" id="consent-receipts" /><span>Receipts</span></label>
-            <label class="checkbox" title="App Exports"><input type="checkbox" value="appExports" id="consent-exports" /><span>App Exports</span></label>
-            <label class="checkbox" title="I agree"><input type="checkbox" required id="agree" /><span>I agree</span></label>
-          </div>
-          <div id="err-consent" class="error" aria-live="polite" hidden></div>
+        <section class="card">
+          <fieldset role="group" aria-label="Preferences">
+            <legend>Weighting</legend>
+            <div id="weighting" class="row" role="radiogroup" aria-label="Weighting" data-select="single">
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="balanced">Balanced</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="low-effort">Low Effort</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="high-impact">High Impact</button>
+              <button type="button" class="chip" role="radio" aria-checked="false" data-value="cost-saving">Cost Saving</button>
+            </div>
+          </fieldset>
           <div id="saveStatus" class="status" aria-live="polite"></div>
-        </fieldset>
-      </section>
+        </section>
 
-      <div class="tools">
-        <button type="button" class="btn" id="resetBtn" title="Reset">Reset</button>
-        <button type="submit" class="btn primary" id="submitBtn" title="Submit">Submit</button>
-      </div>
-
-      <!-- PREVIEW -->
-      <section id="previewCard" class="card" hidden>
-        <legend class="sr">Preview</legend>
-        <div class="inline" style="justify-content:space-between; align-items:center; margin-bottom:8px">
-          <strong>JSON</strong>
-          <button type="button" class="btn" id="copyBtn" title="Copy JSON">Copy</button>
+        <div class="tools">
+          <button type="submit" class="btn primary" id="submitBtn">Submit</button>
         </div>
-        <div id="preview" class="preview" aria-live="polite"></div>
+      </form>
+    </main>
+
+    <!-- ====== View: Results ====== -->
+    <main id="resultsView" hidden>
+      <section class="card">
+        <div class="inline" style="justify-content:space-between; align-items:center">
+          <strong>Top 3 Challenges</strong>
+          <div class="inline">
+            <button id="backBtn" class="btn" type="button">Back</button>
+          </div>
+        </div>
+        <div id="resultsEmail" class="help" style="margin-top:6px"></div>
       </section>
 
-      <!-- RECOMMENDATIONS -->
-      <section id="recsCard" class="card" hidden>
-        <legend class="sr">Recommendations</legend>
-        <div class="inline" style="justify-content:space-between; align-items:center; margin-bottom:8px">
-          <strong>Top Picks</strong>
-          <small class="help">auto-matched from your persona</small>
-        </div>
-        <div id="recs" class="recs"></div>
-      </section>
-    </form>
+      <section class="grid" id="recsList" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader" aria-live="polite" aria-busy="true">
+    <div class="spinner" aria-label="Matching…"></div>
   </div>
 
 <!-- Firebase + App code -->
 <script type="module">
-  // === Firebase Web SDK (v10) ===
+  // Firebase SDK
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import {
     getFirestore, collection, addDoc, serverTimestamp,
-    getDocs, query, where, orderBy, limit, doc, setDoc
+    getDocs, query, where, doc, setDoc
   } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // ---- CONFIG: your Firebase project ----
+  // --- CONFIG ---
   const firebaseConfig = {
     apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
     authDomain: "emission-impossible-6b979.firebaseapp.com",
@@ -300,284 +170,229 @@
     measurementId: "G-0GTRNT5ZY7"
   };
 
-  // Init Firebase
-  let db = null;
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    console.log('Firebase initialized');
-  } catch (e){ console.error('Firebase init error', e); }
+  // Init
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
 
-  // === UI helpers ===
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  // ===== UI helpers =====
+  const $  = (s, r=document)=> r.querySelector(s);
+  const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
 
   function initChips(){
     $$('[data-select="single"]').forEach(group=>{
       group.addEventListener('click', e=>{
-        const btn = e.target.closest('button.chip');
-        if(!btn) return;
+        const btn = e.target.closest('button.chip'); if(!btn) return;
         $$('.chip[role="radio"]', group).forEach(b=>b.setAttribute('aria-checked','false'));
         btn.setAttribute('aria-checked','true');
       });
     });
     $$('[data-select="multi"]').forEach(group=>{
       group.addEventListener('click', e=>{
-        const btn = e.target.closest('button.chip');
-        if(!btn) return;
-        const pressed = btn.getAttribute('aria-pressed') === 'true';
-        btn.setAttribute('aria-pressed', String(!pressed));
+        const btn = e.target.closest('button.chip'); if(!btn) return;
+        btn.setAttribute('aria-pressed', String(btn.getAttribute('aria-pressed') !== 'true'));
       });
     });
   }
 
-  function initSwitch(){
-    const sw = $('#smartMeter');
-    const lab = $('#smartLabel');
-    sw.addEventListener('click', ()=>{
-      const on = sw.getAttribute('aria-checked') === 'true';
-      sw.setAttribute('aria-checked', String(!on));
-      sw.classList.toggle('is-on', !on);
-      lab.textContent = !on ? 'On' : 'Off';
-    });
+  function valSingle(id){
+    const g = $('#'+id); const sel = g?.querySelector('[aria-checked="true"]');
+    return sel ? sel.dataset.value : null;
   }
-
-  function valSingle(groupId){
-    const g = $('#'+groupId);
-    if(!g) return undefined;
-    const sel = g.querySelector('[aria-checked="true"]');
-    return sel ? sel.dataset.value : undefined;
+  function valMulti(id){
+    const g = $('#'+id);
+    return g ? $$('.chip[aria-pressed="true"]', g).map(b=>b.dataset.value) : [];
   }
-
-  function valMulti(groupId){
-    const g = $('#'+groupId);
-    if(!g) return [];
-    return $$('.chip[aria-pressed="true"]', g).map(b=>b.dataset.value);
+  function emailKey(email){ return encodeURIComponent((email||'').trim().toLowerCase()); }
+  function showLoader(on){ $('#loader').classList.toggle('show', !!on); }
+  function nav(to){
+    const a=$('#setupView'), b=$('#resultsView');
+    if(to==='results'){ a.hidden=true; b.hidden=false; location.hash='#results'; }
+    else { a.hidden=false; b.hidden=true; location.hash='#setup'; }
   }
+  function setStatus(msg, type){ const el = $('#saveStatus'); el.textContent = msg; el.className = 'status ' + (type||''); }
 
+  // ===== Data =====
   function serialize(){
     const email = $('#email').value.trim();
-    const smart = $('#smartMeter').getAttribute('aria-checked') === 'true';
-
     return {
-      email: email || '',
-      profile: {
-        region: valSingle('region') || null,
-        ageBand: valSingle('age') || null,
-        householdSize: valSingle('household') || null,
-        housingType: valSingle('housing') || null
-      },
-      energy: {
-        heating: valSingle('heating') || null,
-        tariff: valSingle('tariff') || null,
-        smartMeter: smart
-      },
+      email,
+      energy: { heating: valSingle('heating') },
       devices: valMulti('devices'),
-      routine: {
-        commuteDays: valMulti('commute'),
-        homeHours: valSingle('homeHours') || null
-      },
       interests: valMulti('interests'),
-      goals: valMulti('goals'),
-      constraints: valMulti('constraints'),
-      weighting: valSingle('weighting') || null,
-      consent: ['photos','receipts','appExports'].filter(k=>{
-        if(k==='photos') return $('#consent-photos').checked;
-        if(k==='receipts') return $('#consent-receipts').checked;
-        if(k==='appExports') return $('#consent-exports').checked;
-      }),
+      weighting: valSingle('weighting'),
       timestamp: new Date().toISOString()
     };
   }
-
   function validate(){
-    let ok = true;
     const email = $('#email');
-    const agree = $('#agree');
     const emailErr = $('#err-email');
-    const consentErr = $('#err-consent');
-
-    if(!email.value.trim()){
-      emailErr.textContent = 'Email required';
-      emailErr.hidden = false; email.setAttribute('aria-invalid','true');
-      ok = false;
-    } else if(!email.checkValidity()){
-      emailErr.textContent = 'Email invalid';
-      emailErr.hidden = false; email.setAttribute('aria-invalid','true');
-      ok = false;
-    } else { emailErr.hidden = true; email.removeAttribute('aria-invalid'); }
-
-    if(!agree.checked){
-      consentErr.textContent = 'Agree required';
-      consentErr.hidden = false; agree.setAttribute('aria-invalid','true');
-      ok = false;
-    } else { consentErr.hidden = true; agree.removeAttribute('aria-invalid'); }
-
+    let ok = true;
+    if(!email.value.trim()){ emailErr.textContent='Email required'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); ok=false; }
+    else if(!email.checkValidity()){ emailErr.textContent='Email invalid'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); ok=false; }
+    else { emailErr.hidden=true; email.removeAttribute('aria-invalid'); }
     return ok;
   }
-
-  function showPreview(data){
-    $('#preview').textContent = JSON.stringify(data); // compact
-    $('#previewCard').hidden = false;
-  }
-
-  function setStatus(msg, type){
-    const el = $('#saveStatus');
-    el.textContent = msg;
-    el.className = 'status ' + (type||'');
-  }
-
   async function savePersona(data){
-    if(!db) throw new Error('Firebase not configured');
-    const payload = { ...data, createdAt: serverTimestamp() };
-    const ref = await addDoc(collection(db, 'interests'), payload);
+    const ref = await addDoc(collection(db,'interests'), { ...data, createdAt: serverTimestamp() });
     return ref.id;
   }
 
-  // ---------- Matching helpers ----------
-  function emailKey(email){ return encodeURIComponent((email||'').trim().toLowerCase()); }
-
+  // Index-free persona fetch: email == value, then pick newest locally
   async function fetchLatestPersonaByEmail(email){
-    try{
-      const qRef = query(
-        collection(db, 'interests'),
-        where('email','==', email),
-        orderBy('createdAt','desc'),
-        limit(1)
-      );
-      const snap = await getDocs(qRef);
-      if (snap.empty) return null;
-      return snap.docs[0].data();
-    } catch(err){
-      // Fallback if composite index is missing: fetch without orderBy and pick newest by timestamp
-      console.warn('persona query fallback', err);
-      const qRef2 = query(collection(db,'interests'), where('email','==', email));
-      const snap2 = await getDocs(qRef2);
-      if (snap2.empty) return null;
-      const docs = snap2.docs.map(d=>d.data());
-      docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-      return docs[0];
-    }
+    const qRef = query(collection(db,'interests'), where('email','==', email));
+    const snap = await getDocs(qRef);
+    if (snap.empty) return null;
+    const docs = snap.docs.map(d=>d.data());
+    docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    return docs[0];
   }
 
   async function fetchActiveChallenges(){
-    const qRef = query(collection(db,'challenges'), where('active','==', true));
-    const snap = await getDocs(qRef);
-    return snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    const snap = await getDocs(query(collection(db,'challenges'), where('active','==', true)));
+    return snap.docs.map(d=>({ id:d.id, ...d.data() }));
   }
 
-  function toFeatureSet(persona){
-    return new Set([
-      ...(persona?.devices || []),
-      persona?.energy?.heating,
-      ...(persona?.interests || []),
-      persona?.weighting
-    ].filter(Boolean));
-  }
-
-  function scoreChallenge(ch, have){
-    const requires = ch.requires || [];
+  // Persona-aware explanation
+  function buildWhy(persona, ch, have){
+    const bits = [];
+    const req  = ch.requires || [];
     const tags = ch.tags || [];
+    const w    = persona?.weighting;
+    const heat = persona?.energy?.heating;
+
+    // Requires → personal fit
+    if (req.includes('ev') && have.has('ev')) bits.push('You have an EV; this optimizes charging.');
+    if (req.includes('pv') && have.has('pv')) bits.push('You have PV; shift loads to sunny hours.');
+    if (req.includes('smart_plugs') && have.has('smart_plugs')) bits.push('Smart plugs make this easy to verify.');
+    if (req.includes('heat_pump') && have.has('heat_pump')) bits.push('You have a heat pump; tune ops for fewer kWh.');
+
+    // Heating context
+    if (ch.category === 'heating' && heat === 'gas')      bits.push('Gas heating → high CO₂ leverage.');
+    if (ch.category === 'heating' && heat === 'electric') bits.push('Electric heating → kWh savings cut CO₂ directly.');
+
+    // Interests
+    if (tags.includes('mobility')        && persona?.interests?.includes('mobility')) bits.push('Matches your “Mobility” interest.');
+    if (tags.includes('home-efficiency') && persona?.interests?.includes('home-efficiency')) bits.push('Fits “Home Efficiency”.');
+    if (tags.includes('low-effort')      && persona?.interests?.includes('low-effort')) bits.push('You like low-effort actions.');
+    if (tags.includes('cost-saving')     && persona?.interests?.includes('cost-saving')) bits.push('Supports your cost-saving focus.');
+    if (tags.includes('learning')        && persona?.interests?.includes('learning')) bits.push('Good for learning and habits.');
+
+    // Weighting
     const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
     const effort = Number(ch.effort ?? 1);
+    if (w === 'low-effort'  && effort <= 2)             bits.push('Low effort — your preference.');
+    if (w === 'high-impact' && impact >= 15)            bits.push('High impact — your preference.');
+    if (w === 'cost-saving' && tags.includes('cost-saving')) bits.push('Likely to save money — your priority.');
+    if (w === 'balanced')                               bits.push('Balanced impact vs effort.');
+
+    return bits.join(' • ') || 'Matches your profile and interests.';
+  }
+
+  function toFeatureSet(p){
+    return new Set([ ...(p?.devices||[]), p?.energy?.heating, ...(p?.interests||[]), p?.weighting ].filter(Boolean));
+  }
+
+  function scoreChallenge(ch, have, persona){
+    const requires = ch.requires || [];
     if (requires.some(r => !have.has(r))) return null;
+
+    const tags   = ch.tags || [];
+    const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
+    const effort = Number(ch.effort ?? 1);
+
+    // relevance = overlaps on requires + tags
     let rel = 0;
-    for (const r of requires) if (have.has(r)) rel += 1;
-    for (const t of tags)     if (have.has(t)) rel += 1;
+    requires.forEach(r => { if (have.has(r)) rel++; });
+    tags.forEach(t => { if (have.has(t)) rel++; });
+
     const score = rel * impact - 0.7 * effort;
-    const why = [
-      requires.length ? `needs: ${requires.join(',')}` : null,
-      tags.length ? `tags: ${tags.join(',')}` : null
-    ].filter(Boolean).join(' | ');
-    return { challengeId: ch.id, title: ch.title || ch.id, impact, effort, score, why, explanation: ch.explanation || ch.explain || null };
+
+    return {
+      challengeId: ch.id,
+      title: ch.title || ch.id,
+      impact,
+      effort,
+      score,
+      explain: ch.explain ?? ch.explanation ?? null, // from catalog
+      why: buildWhy(persona, ch, have),              // persona-specific
+    };
   }
 
   async function rankAndWriteRecommendations(email){
     const persona = await fetchLatestPersonaByEmail(email);
-    if (!persona) throw new Error('No persona found for this email');
-    const have = toFeatureSet(persona);
-    const challenges = await fetchActiveChallenges();
-    const ranked = challenges.map(c => scoreChallenge(c, have))
+    if (!persona) throw new Error('No persona for this email');
+    const have        = toFeatureSet(persona);
+    const challenges  = await fetchActiveChallenges();
+    const ranked = challenges
+      .map(c => scoreChallenge(c, have, persona))
       .filter(Boolean)
       .sort((a,b)=> b.score - a.score)
       .slice(0,3);
-    const bucketRef = doc(db, 'recommendations', emailKey(email));
+
+    const bucketRef = doc(db,'recommendations', emailKey(email));
     for (const it of ranked){
-      await setDoc(doc(bucketRef, 'items', it.challengeId), { ...it, createdAt: serverTimestamp() }, { merge:true });
+      await setDoc(doc(bucketRef,'items', it.challengeId), { ...it, createdAt: serverTimestamp() }, { merge:true });
     }
     return ranked;
   }
 
-  function renderRecommendations(items){
-    const card = document.getElementById('recsCard');
-    const grid = document.getElementById('recs');
-    grid.innerHTML = '';
+  // ===== Render Results =====
+  function renderResults(email, items){
+    $('#resultsEmail').textContent = `for: ${email}`;
+    const list = $('#recsList'); list.innerHTML = '';
+    if (!items.length){
+      const empty = document.createElement('div');
+      empty.className='card'; empty.textContent = 'No matches yet.';
+      list.appendChild(empty);
+      return;
+    }
     items.forEach(it=>{
       const d = document.createElement('div');
       d.className = 'rec';
       d.innerHTML = `
-        <div style="display:grid; gap:6px">
-          <strong>${it.title}</strong>
-          <div class="inline">
-            <span class="pill" title="Impact (kgCO₂ est)">Impact</span><span>${Math.round(it.impact)}</span>
-            <span class="pill" title="Effort (1 low – 5 high)">Effort</span><span>${it.effort}</span>
-          </div>
-          <small class="help">Why: ${it.why || '—'}</small>
-        </div>`;
-      grid.appendChild(d);
-    });
-    card.hidden = items.length === 0;
-  }
-
-  function copyJSON(){
-    const txt = $('#preview').textContent;
-    if(!txt) return;
-    navigator.clipboard.writeText(txt).then(()=>{
-      const btn = $('#copyBtn');
-      const prev = btn.textContent; btn.textContent = 'Copied';
-      setTimeout(()=>btn.textContent = prev, 900);
+        <strong>${it.title}</strong>
+        <div class="inline">
+          <span class="pill" title="Impact (kgCO₂ est)">Impact</span><span>${Math.round(it.impact)}</span>
+          <span class="pill" title="Effort (1 low – 5 high)">Effort</span><span>${it.effort}</span>
+        </div>
+        <small class="help">About: ${it.explain || '—'}</small>
+        <small class="help">Why you: ${it.why || '—'}</small>
+      `;
+      list.appendChild(d);
     });
   }
 
-  function resetAll(){
-    $('#form').reset();
-    $$('[role="radiogroup"]').forEach(g=>$$('.chip[role="radio"]', g).forEach(b=>b.setAttribute('aria-checked','false')));
-    $$('[data-select="multi"]').forEach(g=>$$('.chip', g).forEach(b=>b.setAttribute('aria-pressed','false')));
-    const sw = $('#smartMeter'); sw.setAttribute('aria-checked','false'); sw.classList.remove('is-on'); $('#smartLabel').textContent = 'Off';
-    $('#err-email').hidden = true; $('#err-consent').hidden = true;
-    $('#previewCard').hidden = true; $('#preview').textContent = '';
-    $('#recsCard').hidden = true; $('#recs').innerHTML = '';
-    setStatus('', '');
-  }
+  // ===== Wire UI =====
+  initChips();
+  $('#backBtn').addEventListener('click', ()=> nav('setup'));
 
-  // Init UI
-  initChips(); initSwitch();
-
-  // Submit flow → validate → preview → save persona → match → write recs → render
-  const submitBtn = $('#submitBtn');
   $('#form').addEventListener('submit', async (e)=>{
     e.preventDefault();
     if(!validate()) return;
     const data = serialize();
-    showPreview(data);
+    const email = data.email;
 
-    submitBtn.disabled = true; setStatus('Saving…', '');
+    showLoader(true);
+    setStatus('Saving…','');
+
     try{
-      const id = await savePersona(data);
-      setStatus('Saved ✓ id: '+id, 'ok');
-      const items = await rankAndWriteRecommendations(data.email);
-      renderRecommendations(items);
-      setStatus('Saved ✓ + matched', 'ok');
+      await savePersona(data);
+      setStatus('Saved ✓','ok');
+      const items = await rankAndWriteRecommendations(email);
+      renderResults(email, items);
+      nav('results');
     } catch(err){
       console.warn(err);
-      setStatus('Error: '+ (err.message || err), 'fail');
+      setStatus('Error: '+(err.message||err),'fail');
     } finally {
-      submitBtn.disabled = false;
+      showLoader(false);
     }
   });
 
-  $('#copyBtn').addEventListener('click', copyJSON);
-  $('#resetBtn').addEventListener('click', resetAll);
+  // Hash routing (optional deep link)
+  window.addEventListener('hashchange', ()=>{
+    if(location.hash === '#results') nav('results'); else nav('setup');
+  });
 </script>
 </body>
 </html>
