@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Green Impact Wallet — Persona (Lite)</title>
+<title>Green Impact Wallet — Persona (Client-only)</title>
 <style>
   :root{
     --bg:#0b0e11; --card:#131820; --ink:#f7fafc; --muted:#a8b3bf;
     --green:#22c55e; --green-ink:#062b16; --red:#ef4444; --focus:#93c5fd;
     --stroke:#243244;
+    --glow:0 10px 40px rgba(34,197,94,.15);
   }
   html,body{height:100%}
   body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased}
@@ -16,8 +17,9 @@
   header{display:flex; align-items:center; justify-content:space-between; margin:2px 0 14px}
   header h1{font-size:18px; margin:0; font-weight:800; letter-spacing:.2px}
   .brand{display:flex; gap:8px; align-items:center}
-  .badge{background:var(--green); color:var(--green-ink); border-radius:999px; padding:4px 10px; font-weight:800; font-size:12px}
+  .badge{background:var(--green); color:var(--green-ink); border-radius:999px; padding:4px 10px; font-weight:800; font-size:12px; box-shadow:var(--glow)}
   .card{background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:14px}
+  .card.soft{background:linear-gradient(180deg,#121926,#0e141b); box-shadow:var(--glow)}
   fieldset{border:0; margin:0; padding:0}
   legend{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
   .row{display:flex; flex-wrap:wrap; gap:12px}
@@ -28,8 +30,10 @@
   input[type=email]:focus{outline:3px solid var(--focus); outline-offset:2px}
   .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
   .tools{position:sticky; bottom:8px; z-index:5; display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
-  .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px}
+  .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px; transition:transform .06s ease}
   .btn.primary{background:var(--green); color:var(--green-ink); border-color:var(--green)}
+  .btn.small{padding:8px 10px; font-weight:800; font-size:13px; border-radius:10px}
+  .btn:active{transform:scale(.98)}
   .btn:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
   .error{color:var(--red); font-weight:800; font-size:12px; margin-top:6px}
   .error[hidden]{display:none}
@@ -47,8 +51,15 @@
 
   /* Results */
   .grid{display:grid; gap:12px}
-  .rec{background:#0f141b; border:1px solid var(--stroke); border-radius:12px; padding:12px; display:grid; gap:8px}
-  .pill{padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
+  .rec{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:14px; padding:14px; display:grid; gap:8px; box-shadow:var(--glow)}
+  .rec h3{margin:0 0 6px; font-size:16px}
+  .kpi {display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
+  .kpi.co2 {background:linear-gradient(90deg,#1f8a4c33,#1f8a4c0f)}
+  .kpi.eff {background:linear-gradient(90deg,#8a6a1f33,#8a6a1f0f)}
+  .kpi.tok {background:linear-gradient(90deg,#22c55e44,#22c55e1a)}
+  .kpi i {font-style:normal; opacity:.85}
+  .bar {height:6px; background:#0e141b; border:1px solid var(--stroke); border-radius:999px; overflow:hidden}
+  .bar > span {display:block; height:100%; background:linear-gradient(90deg,#22c55e,#86efac)}
 </style>
 </head>
 <body>
@@ -61,7 +72,7 @@
     <!-- ====== View: Setup (5 key fields) ====== -->
     <main id="setupView">
       <form id="form" class="grid" novalidate>
-        <section class="card">
+        <section class="card soft">
           <fieldset role="group" aria-label="Basics">
             <legend>Basics</legend>
             <div class="inline">
@@ -141,7 +152,7 @@
         <div id="resultsEmail" class="help" style="margin-top:6px"></div>
       </section>
 
-      <section class="grid" id="recsList" aria-live="polite"></section>
+      <section class="grid" id="recsList" aria-live="polite" style="padding: 10px;"></section>
     </main>
   </div>
 
@@ -159,7 +170,7 @@
     getDocs, query, where, doc, setDoc
   } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // --- CONFIG ---
+  // --- CONFIG (yours) ---
   const firebaseConfig = {
     apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
     authDomain: "emission-impossible-6b979.firebaseapp.com",
@@ -177,7 +188,6 @@
   // ===== UI helpers =====
   const $  = (s, r=document)=> r.querySelector(s);
   const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
-
   function initChips(){
     $$('[data-select="single"]').forEach(group=>{
       group.addEventListener('click', e=>{
@@ -193,25 +203,14 @@
       });
     });
   }
-
-  function valSingle(id){
-    const g = $('#'+id); const sel = g?.querySelector('[aria-checked="true"]');
-    return sel ? sel.dataset.value : null;
-  }
-  function valMulti(id){
-    const g = $('#'+id);
-    return g ? $$('.chip[aria-pressed="true"]', g).map(b=>b.dataset.value) : [];
-  }
+  function valSingle(id){ const g = $('#'+id); const sel = g?.querySelector('[aria-checked="true"]'); return sel ? sel.dataset.value : null; }
+  function valMulti(id){ const g = $('#'+id); return g ? $$('.chip[aria-pressed="true"]', g).map(b=>b.dataset.value) : []; }
   function emailKey(email){ return encodeURIComponent((email||'').trim().toLowerCase()); }
   function showLoader(on){ $('#loader').classList.toggle('show', !!on); }
-  function nav(to){
-    const a=$('#setupView'), b=$('#resultsView');
-    if(to==='results'){ a.hidden=true; b.hidden=false; location.hash='#results'; }
-    else { a.hidden=false; b.hidden=true; location.hash='#setup'; }
-  }
+  function nav(to){ const a=$('#setupView'), b=$('#resultsView'); if(to==='results'){ a.hidden=true; b.hidden=false; location.hash='#results'; } else { a.hidden=false; b.hidden=true; location.hash='#setup'; } }
   function setStatus(msg, type){ const el = $('#saveStatus'); el.textContent = msg; el.className = 'status ' + (type||''); }
 
-  // ===== Data =====
+  // ===== Persona serialize/validate/save =====
   function serialize(){
     const email = $('#email').value.trim();
     return {
@@ -236,8 +235,6 @@
     const ref = await addDoc(collection(db,'interests'), { ...data, createdAt: serverTimestamp() });
     return ref.id;
   }
-
-  // Index-free persona fetch: email == value, then pick newest locally
   async function fetchLatestPersonaByEmail(email){
     const qRef = query(collection(db,'interests'), where('email','==', email));
     const snap = await getDocs(qRef);
@@ -246,75 +243,87 @@
     docs.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
     return docs[0];
   }
-
   async function fetchActiveChallenges(){
     const snap = await getDocs(query(collection(db,'challenges'), where('active','==', true)));
     return snap.docs.map(d=>({ id:d.id, ...d.data() }));
   }
 
-  // Persona-aware explanation
-  function buildWhy(persona, ch, have){
-    const bits = [];
-    const req  = ch.requires || [];
-    const tags = ch.tags || [];
-    const w    = persona?.weighting;
-    const heat = persona?.energy?.heating;
-
-    // Requires → personal fit
-    if (req.includes('ev') && have.has('ev')) bits.push('You have an EV; this optimizes charging.');
-    if (req.includes('pv') && have.has('pv')) bits.push('You have PV; shift loads to sunny hours.');
-    if (req.includes('smart_plugs') && have.has('smart_plugs')) bits.push('Smart plugs make this easy to verify.');
-    if (req.includes('heat_pump') && have.has('heat_pump')) bits.push('You have a heat pump; tune ops for fewer kWh.');
-
-    // Heating context
-    if (ch.category === 'heating' && heat === 'gas')      bits.push('Gas heating → high CO₂ leverage.');
-    if (ch.category === 'heating' && heat === 'electric') bits.push('Electric heating → kWh savings cut CO₂ directly.');
-
-    // Interests
-    if (tags.includes('mobility')        && persona?.interests?.includes('mobility')) bits.push('Matches your “Mobility” interest.');
-    if (tags.includes('home-efficiency') && persona?.interests?.includes('home-efficiency')) bits.push('Fits “Home Efficiency”.');
-    if (tags.includes('low-effort')      && persona?.interests?.includes('low-effort')) bits.push('You like low-effort actions.');
-    if (tags.includes('cost-saving')     && persona?.interests?.includes('cost-saving')) bits.push('Supports your cost-saving focus.');
-    if (tags.includes('learning')        && persona?.interests?.includes('learning')) bits.push('Good for learning and habits.');
-
-    // Weighting
-    const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
-    const effort = Number(ch.effort ?? 1);
-    if (w === 'low-effort'  && effort <= 2)             bits.push('Low effort — your preference.');
-    if (w === 'high-impact' && impact >= 15)            bits.push('High impact — your preference.');
-    if (w === 'cost-saving' && tags.includes('cost-saving')) bits.push('Likely to save money — your priority.');
-    if (w === 'balanced')                               bits.push('Balanced impact vs effort.');
-
-    return bits.join(' • ') || 'Matches your profile and interests.';
+  // ===== Context & scoring (client-only “AI-lite”) =====
+  function getContext(){
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMonth()+1;
+    const night = (h>=22 || h<6);
+    const midday = (h>=11 && h<=15);
+    const cold = (m<=3 || m>=11); // Nov–Mar
+    return { hour:h, night, midday, cold };
   }
-
   function toFeatureSet(p){
     return new Set([ ...(p?.devices||[]), p?.energy?.heating, ...(p?.interests||[]), p?.weighting ].filter(Boolean));
   }
-
-  function scoreChallenge(ch, have, persona){
+  function baseTokens(impact, weighting){
+    const mult = weighting==='high-impact' ? 0.6 : weighting==='low-effort' ? 0.45 : 0.5;
+    return Math.max(1, Math.ceil((Number(impact)||0) * mult));
+  }
+  function buildWhy(persona, ch, have, ctx){
+    const req  = ch.requires || [];
+    const tags = ch.tags || [];
+    const bits = [];
+    if (req.includes('ev') && have.has('ev')) {
+      bits.push(ctx.night ? 'You have an EV and it’s night — cleanest charging now.' : 'You have an EV — schedule night charging.');
+    }
+    if (req.includes('pv') && have.has('pv')) {
+      bits.push(ctx.midday ? 'You have PV and it’s midday — shift loads to sunshine.' : 'You have PV — shift loads to sunny hours.');
+    }
+    if (ch.category==='heating' && ctx.cold) bits.push('Cold season → heating cuts save most CO₂.');
+    if (tags.includes('cost-saving') && (persona?.weighting==='cost-saving')) bits.push('Aligned with your cost-saving focus.');
+    if (tags.includes('home-efficiency') && (persona?.interests||[]).includes('home-efficiency')) bits.push('Fits your Home Efficiency interest.');
+    if (!bits.length) bits.push('Good fit for your setup and goals.');
+    return bits.join(' • ');
+  }
+  function buildNudge(ch, ctx){
+    if (ch.id?.includes('ev') && ctx.night) return 'Plug in before bed tonight.';
+    if (ch.id?.includes('pv') && ctx.midday) return 'Run a load at lunchtime today.';
+    if (ch.category==='heating') return 'Try it for a week and track comfort.';
+    if ((ch.tags||[]).includes('low-effort')) return 'Quick win—start now.';
+    return 'Set a reminder and take the first step.';
+  }
+  function scoreChallenge(ch, have, persona, ctx){
     const requires = ch.requires || [];
     if (requires.some(r => !have.has(r))) return null;
 
-    const tags   = ch.tags || [];
     const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
     const effort = Number(ch.effort ?? 1);
+    const tags   = ch.tags || [];
 
-    // relevance = overlaps on requires + tags
+    // relevance: requires/tags overlap
     let rel = 0;
-    requires.forEach(r => { if (have.has(r)) rel++; });
-    tags.forEach(t => { if (have.has(t)) rel++; });
+    requires.forEach(r => { if (have.has(r)) rel += 2; });   // requires matched are strong signals
+    tags.forEach(t => { if (have.has(t)) rel += 1; });
 
-    const score = rel * impact - 0.7 * effort;
+    // preference shaping
+    if (persona?.weighting==='low-effort') rel += (effort<=2 ? 2 : -1);
+    if (persona?.weighting==='high-impact') rel += (impact>=15 ? 2 : 0);
+    if (persona?.weighting==='cost-saving' && tags.includes('cost-saving')) rel += 2;
+
+    // contextual boosters
+    if (requires.includes('ev') && ctx.night) rel += 2;
+    if (requires.includes('pv') && ctx.midday) rel += 2;
+    if (ch.category==='heating' && ctx.cold) rel += 2;
+
+    const score = rel * (impact||1) - 0.7 * effort;
+
+    // client-side “why” & tokens & nudge
+    const why   = buildWhy(persona, ch, have, ctx);
+    const nudge = buildNudge(ch, ctx);
+    const tokens= baseTokens(impact, persona?.weighting);
 
     return {
       challengeId: ch.id,
       title: ch.title || ch.id,
-      impact,
-      effort,
-      score,
-      explain: ch.explain ?? ch.explanation ?? null, // from catalog
-      why: buildWhy(persona, ch, have),              // persona-specific
+      impact, effort, score,
+      explain: ch.explain ?? ch.explanation ?? null,
+      why, nudge, tokens
     };
   }
 
@@ -322,9 +331,26 @@
     const persona = await fetchLatestPersonaByEmail(email);
     if (!persona) throw new Error('No persona for this email');
     const have        = toFeatureSet(persona);
+    const ctx         = getContext();
     const challenges  = await fetchActiveChallenges();
+
+    // if user picked almost nothing → cold-start: sort by (impact - effort)
+    const minimal = (!persona.devices?.length && !persona.interests?.length && !persona.energy?.heating && !persona.weighting);
+
     const ranked = challenges
-      .map(c => scoreChallenge(c, have, persona))
+      .map(c => minimal
+            ? ({
+                challengeId:c.id,
+                title:c.title || c.id,
+                impact:Number(c.impact ?? c.impactKgCO2 ?? 0),
+                effort:Number(c.effort ?? 1),
+                score:(Number(c.impact ?? c.impactKgCO2 ?? 0)) - 0.7*(Number(c.effort ?? 1)),
+                explain:c.explain ?? c.explanation ?? null,
+                why:'Solid starter with good impact per effort.',
+                nudge: buildNudge(c, ctx),
+                tokens: baseTokens(Number(c.impact ?? c.impactKgCO2 ?? 0), 'balanced')
+              })
+            : scoreChallenge(c, have, persona, ctx))
       .filter(Boolean)
       .sort((a,b)=> b.score - a.score)
       .slice(0,3);
@@ -346,20 +372,45 @@
       list.appendChild(empty);
       return;
     }
+    const maxImpact = Math.max(...items.map(i => Number(i.impact)||0), 1);
+
     items.forEach(it=>{
       const d = document.createElement('div');
       d.className = 'rec';
+      const pct = Math.max(5, Math.round((Number(it.impact)||0) / maxImpact * 100));
       d.innerHTML = `
-        <strong>${it.title}</strong>
-        <div class="inline">
-          <span class="pill" title="Impact (kgCO₂ est)">Impact</span><span>${Math.round(it.impact)}</span>
-          <span class="pill" title="Effort (1 low – 5 high)">Effort</span><span>${it.effort}</span>
+        <h3>${it.title}</h3>
+        <div class="inline" style="gap:8px; flex-wrap:wrap">
+          <span class="kpi co2"><i>🌱 CO₂↓</i> ${Math.round(it.impact)} kg</span>
+          <span class="kpi eff"><i>⚙️ Effort</i> ${it.effort}</span>
+          <span class="kpi tok"><i>🎟️ Tokens</i> ${it.tokens}</span>
         </div>
-        <small class="help">About: ${it.explain || '—'}</small>
+        <div class="bar" aria-hidden="true" style="margin:6px 0 2px"><span style="width:${pct}%"></span></div>
+        <small class="help">About: ${it.explain || '—'}</small><br/>
         <small class="help">Why you: ${it.why || '—'}</small>
+        <div class="help" style="margin-top:6px">💡 ${it.nudge}</div>
+        <div class="inline" style="gap:8px; margin-top:8px">
+          <button class="btn small primary" data-accept="${it.challengeId}">Start</button>
+          <button class="btn small" data-later="${it.challengeId}">Later</button>
+        </div>
       `;
       list.appendChild(d);
     });
+
+    // accept handler (writes to Firestore)
+    list.addEventListener('click', async (e)=>{
+      const startBtn = e.target.closest('button[data-accept]');
+      if (!startBtn) return;
+      const id = startBtn.getAttribute('data-accept');
+      const pick = items.find(x => x.challengeId === id);
+      if (!pick) return;
+      await addDoc(collection(db,'acceptances'), {
+        email, challengeId: id, tokens: pick.tokens || 0, impact: pick.impact,
+        status: 'accepted', createdAt: serverTimestamp()
+      });
+      startBtn.textContent = 'Added ✓';
+      startBtn.disabled = true;
+    }, { once:true });
   }
 
   // ===== Wire UI =====
@@ -389,7 +440,6 @@
     }
   });
 
-  // Hash routing (optional deep link)
   window.addEventListener('hashchange', ()=>{
     if(location.hash === '#results') nav('results'); else nav('setup');
   });
