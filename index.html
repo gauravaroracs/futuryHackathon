@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Green Impact Wallet — Persona (Client-only)</title>
+<title>Green Impact Wallet — Persona (Client-only, no-Auth, OpenAI optional)</title>
 <style>
   :root{
     --bg:#0b0e11; --card:#131820; --ink:#f7fafc; --muted:#a8b3bf;
     --green:#22c55e; --green-ink:#062b16; --red:#ef4444; --focus:#93c5fd;
-    --stroke:#243244;
-    --glow:0 10px 40px rgba(34,197,94,.15);
+    --stroke:#243244; --glow:0 10px 40px rgba(34,197,94,.15);
   }
   html,body{height:100%}
   body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased}
@@ -18,8 +17,11 @@
   header h1{font-size:18px; margin:0; font-weight:800; letter-spacing:.2px}
   .brand{display:flex; gap:8px; align-items:center}
   .badge{background:var(--green); color:var(--green-ink); border-radius:999px; padding:4px 10px; font-weight:800; font-size:12px; box-shadow:var(--glow)}
-  .card{background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:14px}
-  .card.soft{background:linear-gradient(180deg,#121926,#0e141b); box-shadow:var(--glow)}
+  .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid var(--stroke); border-radius:999px; padding:6px 10px; font-size:12px}
+  .pill button{all:unset; cursor:pointer; font-weight:800; padding:4px 8px; border-radius:8px; border:1px solid var(--stroke)}
+  .help{color:var(--muted); font-size:12px}
+
+  .card{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:16px; padding:14px; box-shadow:var(--glow)}
   fieldset{border:0; margin:0; padding:0}
   legend{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
   .row{display:flex; flex-wrap:wrap; gap:12px}
@@ -30,20 +32,17 @@
   input[type=email]:focus{outline:3px solid var(--focus); outline-offset:2px}
   .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
   .tools{position:sticky; bottom:8px; z-index:5; display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
-  .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px; transition:transform .06s ease}
+  .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px}
   .btn.primary{background:var(--green); color:var(--green-ink); border-color:var(--green)}
   .btn.small{padding:8px 10px; font-weight:800; font-size:13px; border-radius:10px}
-  .btn:active{transform:scale(.98)}
-  .btn:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
   .error{color:var(--red); font-weight:800; font-size:12px; margin-top:6px}
   .error[hidden]{display:none}
-  .help{color:var(--muted); font-size:12px}
   .status{font-size:12px; font-weight:800; margin-top:6px}
   .status.ok{color:var(--green)}
   .status.fail{color:var(--red)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
 
-  /* Loader overlay */
+  /* Loader */
   .loader{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); backdrop-filter:blur(2px); z-index:50}
   .loader.show{display:grid}
   .spinner{width:48px; height:48px; border-radius:999px; border:4px solid var(--stroke); border-top-color:var(--green); animation:spin 1s linear infinite}
@@ -51,13 +50,12 @@
 
   /* Results */
   .grid{display:grid; gap:12px}
-  .rec{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:14px; padding:14px; display:grid; gap:8px; box-shadow:var(--glow)}
+  .rec{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:14px; padding:14px; display:grid; gap:8px}
   .rec h3{margin:0 0 6px; font-size:16px}
   .kpi {display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
   .kpi.co2 {background:linear-gradient(90deg,#1f8a4c33,#1f8a4c0f)}
   .kpi.eff {background:linear-gradient(90deg,#8a6a1f33,#8a6a1f0f)}
   .kpi.tok {background:linear-gradient(90deg,#22c55e44,#22c55e1a)}
-  .kpi i {font-style:normal; opacity:.85}
   .bar {height:6px; background:#0e141b; border:1px solid var(--stroke); border-radius:999px; overflow:hidden}
   .bar > span {display:block; height:100%; background:linear-gradient(90deg,#22c55e,#86efac)}
 </style>
@@ -65,14 +63,20 @@
 <body>
   <div class="wrap">
     <header>
-      <div class="brand"><span class="badge" aria-hidden="true">Green</span><h1>Persona</h1></div>
-      <small class="help">≤ 60s</small>
+      <div class="brand">
+        <span class="badge" aria-hidden="true">Green</span><h1>Persona</h1>
+      </div>
+      <div class="pill" id="aiPill">
+        <span id="aiBadge">OpenAI: OFF</span>
+        <button id="setKeyBtn" title="Set OpenAI API key">Set key</button>
+        <button id="clearKeyBtn" title="Clear key">Clear</button>
+      </div>
     </header>
 
-    <!-- ====== View: Setup (5 key fields) ====== -->
+    <!-- ===== Setup (5 fields) ===== -->
     <main id="setupView">
       <form id="form" class="grid" novalidate>
-        <section class="card soft">
+        <section class="card">
           <fieldset role="group" aria-label="Basics">
             <legend>Basics</legend>
             <div class="inline">
@@ -140,7 +144,7 @@
       </form>
     </main>
 
-    <!-- ====== View: Results ====== -->
+    <!-- ===== Results ===== -->
     <main id="resultsView" hidden>
       <section class="card">
         <div class="inline" style="justify-content:space-between; align-items:center">
@@ -151,8 +155,7 @@
         </div>
         <div id="resultsEmail" class="help" style="margin-top:6px"></div>
       </section>
-
-      <section class="grid" id="recsList" aria-live="polite" style="padding: 10px;"></section>
+      <section class="grid" id="recsList" aria-live="polite"></section>
     </main>
   </div>
 
@@ -161,16 +164,15 @@
     <div class="spinner" aria-label="Matching…"></div>
   </div>
 
-<!-- Firebase + App code -->
+<!-- ===== Scripts ===== -->
 <script type="module">
-  // Firebase SDK
+  /* ---------------- Firebase (no Auth) ---------------- */
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import {
     getFirestore, collection, addDoc, serverTimestamp,
     getDocs, query, where, doc, setDoc
   } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  // --- CONFIG (yours) ---
   const firebaseConfig = {
     apiKey: "AIzaSyBuOoJV5nheBw3euykuMlvtehwFmnSHf_w",
     authDomain: "emission-impossible-6b979.firebaseapp.com",
@@ -180,12 +182,65 @@
     appId: "1:840522443479:web:b2efc2bcf3ef45b6799e92",
     measurementId: "G-0GTRNT5ZY7"
   };
-
-  // Init
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // ===== UI helpers =====
+  // DEV guest id (no Auth). Requires wide-open Firestore rules during dev.
+  const guestId =
+    localStorage.getItem('guest_id') ||
+    (() => {
+      const v = 'guest_' + (crypto.randomUUID?.() || Math.random().toString(36).slice(2));
+      localStorage.setItem('guest_id', v);
+      return v;
+    })();
+
+  /* -------- OpenAI (direct fetch, no SDK) -------- */
+  // DEMO ONLY: paste a temporary key here or set via the pill in the header.
+  let OPENAI_KEY = 'OPENAI_API_KEY_HERE'; // <-- replace temporarily if you want
+  const aiBadge = document.getElementById('aiBadge');
+  function refreshAiBadge(){
+    const k = (OPENAI_KEY && !OPENAI_KEY.includes('HERE')) || localStorage.getItem('OPENAI_API_KEY');
+    aiBadge.textContent = k ? 'OpenAI: ON' : 'OpenAI: OFF';
+  }
+  document.getElementById('setKeyBtn').addEventListener('click', ()=>{
+    const k = prompt('Enter OpenAI API Key (stored in localStorage for this demo)');
+    if(!k) return;
+    localStorage.setItem('OPENAI_API_KEY', k.trim());
+    OPENAI_KEY = k.trim();
+    refreshAiBadge();
+  });
+  document.getElementById('clearKeyBtn').addEventListener('click', ()=>{
+    localStorage.removeItem('OPENAI_API_KEY');
+    refreshAiBadge();
+  });
+  if (localStorage.getItem('OPENAI_API_KEY')) OPENAI_KEY = localStorage.getItem('OPENAI_API_KEY');
+  refreshAiBadge();
+
+  async function openaiOneLiner(prompt){
+    const key = localStorage.getItem('OPENAI_API_KEY') || OPENAI_KEY;
+    if(!key || key.includes('HERE')) return null;
+    try{
+      const resp = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + key,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-5-nano',
+          input: prompt,
+          max_output_tokens: 60
+        })
+      });
+      const data = await resp.json();
+      return (data.output_text || '').trim();
+    } catch(e){
+      console.warn('OpenAI fetch failed', e);
+      return null;
+    }
+  }
+
+  /* ---------------- UI helpers ---------------- */
   const $  = (s, r=document)=> r.querySelector(s);
   const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
   function initChips(){
@@ -210,7 +265,7 @@
   function nav(to){ const a=$('#setupView'), b=$('#resultsView'); if(to==='results'){ a.hidden=true; b.hidden=false; location.hash='#results'; } else { a.hidden=false; b.hidden=true; location.hash='#setup'; } }
   function setStatus(msg, type){ const el = $('#saveStatus'); el.textContent = msg; el.className = 'status ' + (type||''); }
 
-  // ===== Persona serialize/validate/save =====
+  /* ---------------- Persona save/fetch ---------------- */
   function serialize(){
     const email = $('#email').value.trim();
     return {
@@ -248,129 +303,170 @@
     return snap.docs.map(d=>({ id:d.id, ...d.data() }));
   }
 
-  // ===== Context & scoring (client-only “AI-lite”) =====
-  function getContext(){
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMonth()+1;
-    const night = (h>=22 || h<6);
-    const midday = (h>=11 && h<=15);
-    const cold = (m<=3 || m>=11); // Nov–Mar
-    return { hour:h, night, midday, cold };
+  /* ---------------- Scoring + context ---------------- */
+  function getContext(persona){
+    const now = new Date(); const h = now.getHours(); const m = now.getMonth()+1;
+    const home = persona?.routine?.homeHours;
+    const nightPref = home === 'Night';
+    const eveningPref = home === 'Evening';
+    return {
+      night: nightPref || (h>=22||h<6) || eveningPref,
+      midday: (h>=11 && h<=15),
+      cold: (m<=3 || m>=11),
+      commuteDays: (persona?.routine?.commuteDays || []).length,
+      tariff: persona?.energy?.tariff || null,
+      smart: !!persona?.energy?.smartMeter
+    };
   }
   function toFeatureSet(p){
-    return new Set([ ...(p?.devices||[]), p?.energy?.heating, ...(p?.interests||[]), p?.weighting ].filter(Boolean));
+    return new Set([
+      ...(p?.devices || []),
+      p?.energy?.heating,
+      p?.energy?.tariff ? `tariff:${p.energy.tariff}` : null,
+      p?.energy?.smartMeter ? 'smart_meter' : null,
+      ...(p?.interests || []),
+      ...(p?.goals || []),
+      ...(p?.constraints || []),
+      p?.weighting
+    ].filter(Boolean));
   }
-  function baseTokens(impact, weighting){
+  function baseTokens(impact, weighting, goals=[]){
     const mult = weighting==='high-impact' ? 0.6 : weighting==='low-effort' ? 0.45 : 0.5;
-    return Math.max(1, Math.ceil((Number(impact)||0) * mult));
+    let t = Math.max(1, Math.ceil((Number(impact)||0) * mult));
+    if ((goals||[]).includes('get-rewards')) t += 1;
+    return t;
   }
   function buildWhy(persona, ch, have, ctx){
     const req  = ch.requires || [];
     const tags = ch.tags || [];
     const bits = [];
-    if (req.includes('ev') && have.has('ev')) {
-      bits.push(ctx.night ? 'You have an EV and it’s night — cleanest charging now.' : 'You have an EV — schedule night charging.');
-    }
-    if (req.includes('pv') && have.has('pv')) {
-      bits.push(ctx.midday ? 'You have PV and it’s midday — shift loads to sunshine.' : 'You have PV — shift loads to sunny hours.');
-    }
-    if (ch.category==='heating' && ctx.cold) bits.push('Cold season → heating cuts save most CO₂.');
-    if (tags.includes('cost-saving') && (persona?.weighting==='cost-saving')) bits.push('Aligned with your cost-saving focus.');
-    if (tags.includes('home-efficiency') && (persona?.interests||[]).includes('home-efficiency')) bits.push('Fits your Home Efficiency interest.');
-    if (!bits.length) bits.push('Good fit for your setup and goals.');
-    return bits.join(' • ');
-  }
-  function buildNudge(ch, ctx){
-    if (ch.id?.includes('ev') && ctx.night) return 'Plug in before bed tonight.';
-    if (ch.id?.includes('pv') && ctx.midday) return 'Run a load at lunchtime today.';
-    if (ch.category==='heating') return 'Try it for a week and track comfort.';
-    if ((ch.tags||[]).includes('low-effort')) return 'Quick win—start now.';
-    return 'Set a reminder and take the first step.';
+    if (req.includes('ev') && have.has('ev')) bits.push(ctx.night ? 'EV + night → cleaner kWh.' : 'EV owner: schedule off-peak.');
+    if (req.includes('pv') && have.has('pv')) bits.push(ctx.midday ? 'Use midday PV to offset grid.' : 'Shift to sunny hours.');
+    if (ch.category==='heating' && ctx.cold) bits.push('Cold season: heating cuts matter more.');
+    if (ctx.tariff === 'dynamic' && tags.includes('electricity')) bits.push('Dynamic tariff: time-shift saves cost/CO₂.');
+    if (ctx.smart && (ch.evidence||[]).some(e => ['meter','smart_plug'].includes(e))) bits.push('Smart meter/plugs: easy verification.');
+    if ((persona?.goals||[]).includes('save-money') && tags.includes('cost-saving')) bits.push('Matches your cost goal.');
+    if ((persona?.goals||[]).includes('reduce-co2') && (ch.impactKgCO2||0)>=15) bits.push('High CO₂ impact matches your goal.');
+    if ((persona?.constraints||[]).includes('landlord') && req.some(r => ['pv','heat_pump'].includes(r))) bits.push('Note: may need landlord OK.');
+    if (ch.category==='mobility' && ctx.commuteDays>0) bits.push('Commute pattern: mobility swap is feasible.');
+    return bits.join(' • ') || 'Good fit for your setup and goals.';
   }
   function scoreChallenge(ch, have, persona, ctx){
     const requires = ch.requires || [];
     if (requires.some(r => !have.has(r))) return null;
-
     const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
     const effort = Number(ch.effort ?? 1);
     const tags   = ch.tags || [];
-
-    // relevance: requires/tags overlap
+    const goals  = new Set(persona?.goals || []);
+    const cons   = new Set(persona?.constraints || []);
     let rel = 0;
-    requires.forEach(r => { if (have.has(r)) rel += 2; });   // requires matched are strong signals
+    requires.forEach(r => { if (have.has(r)) rel += 2; });
     tags.forEach(t => { if (have.has(t)) rel += 1; });
-
-    // preference shaping
-    if (persona?.weighting==='low-effort') rel += (effort<=2 ? 2 : -1);
-    if (persona?.weighting==='high-impact') rel += (impact>=15 ? 2 : 0);
-    if (persona?.weighting==='cost-saving' && tags.includes('cost-saving')) rel += 2;
-
-    // contextual boosters
+    if (persona?.weighting === 'low-effort')  rel += (effort<=2 ? 2 : -1);
+    if (persona?.weighting === 'high-impact') rel += (impact>=15 ? 2 : 0);
+    if (persona?.weighting === 'cost-saving' && tags.includes('cost-saving')) rel += 2;
+    if (goals.has('reduce-co2') && impact>=15) rel += 2;
+    if (goals.has('save-money') && tags.includes('cost-saving')) rel += 2;
+    if (ctx.tariff==='dynamic' && tags.includes('electricity')) rel += 1;
     if (requires.includes('ev') && ctx.night) rel += 2;
     if (requires.includes('pv') && ctx.midday) rel += 2;
     if (ch.category==='heating' && ctx.cold) rel += 2;
-
-    const score = rel * (impact||1) - 0.7 * effort;
-
-    // client-side “why” & tokens & nudge
-    const why   = buildWhy(persona, ch, have, ctx);
-    const nudge = buildNudge(ch, ctx);
-    const tokens= baseTokens(impact, persona?.weighting);
-
-    return {
-      challengeId: ch.id,
-      title: ch.title || ch.id,
-      impact, effort, score,
-      explain: ch.explain ?? ch.explanation ?? null,
-      why, nudge, tokens
-    };
+    if (ch.category==='mobility' && ctx.commuteDays>0) rel += Math.min(3, 1 + Math.floor(ctx.commuteDays/2));
+    if (cons.has('landlord') && requires.some(r => ['pv','heat_pump'].includes(r))) rel -= 3;
+    const score = (rel * impact) - (0.7 * effort);
+    return { impact, effort, score };
   }
 
+  /* ---------------- LLM explanation ---------------- */
+  function personaToPlain(p){
+    return [
+      p?.weighting ? `preference=${p.weighting}` : '',
+      p?.energy?.heating ? `heating=${p.energy.heating}` : '',
+      (p?.devices||[]).length ? `devices=${(p.devices||[]).join('|')}` : '',
+      (p?.interests||[]).length ? `interests=${(p.interests||[]).join('|')}` : '',
+      (p?.goals||[]).length ? `goals=${(p.goals||[]).join('|')}` : '',
+      (p?.constraints||[]).length ? `constraints=${(p.constraints||[]).join('|')}` : ''
+    ].filter(Boolean).join('; ');
+  }
+  async function llmExplain(persona, ch){
+    const prompt = `Persona: ${personaToPlain(persona)}
+Challenge: ${ch.title} — ${ch.explain || ch.explanation || ''}. Requires: ${(ch.requires||[]).join(', ')||'none'}. Tags: ${(ch.tags||[]).join(', ')}.
+Task: In <=22 words, write a clear, friendly “why this fits you” line. No emojis. Start directly.`;
+    return await openaiOneLiner(prompt);
+  }
+  async function augmentWithLLM(persona, top3){
+    const outs = await Promise.all(top3.map(it => llmExplain(persona, it._raw)));
+    outs.forEach((txt, i)=> { if(txt) top3[i].explain_llm = txt; });
+    return top3;
+  }
+
+  /* ---------------- Rank + write recs ---------------- */
   async function rankAndWriteRecommendations(email){
     const persona = await fetchLatestPersonaByEmail(email);
     if (!persona) throw new Error('No persona for this email');
-    const have        = toFeatureSet(persona);
-    const ctx         = getContext();
-    const challenges  = await fetchActiveChallenges();
 
-    // if user picked almost nothing → cold-start: sort by (impact - effort)
-    const minimal = (!persona.devices?.length && !persona.interests?.length && !persona.energy?.heating && !persona.weighting);
+    const challenges = await fetchActiveChallenges();
+    const have = toFeatureSet(persona);
+    const ctx  = getContext(persona);
 
-    const ranked = challenges
-      .map(c => minimal
-            ? ({
-                challengeId:c.id,
-                title:c.title || c.id,
-                impact:Number(c.impact ?? c.impactKgCO2 ?? 0),
-                effort:Number(c.effort ?? 1),
-                score:(Number(c.impact ?? c.impactKgCO2 ?? 0)) - 0.7*(Number(c.effort ?? 1)),
-                explain:c.explain ?? c.explanation ?? null,
-                why:'Solid starter with good impact per effort.',
-                nudge: buildNudge(c, ctx),
-                tokens: baseTokens(Number(c.impact ?? c.impactKgCO2 ?? 0), 'balanced')
-              })
-            : scoreChallenge(c, have, persona, ctx))
-      .filter(Boolean)
-      .sort((a,b)=> b.score - a.score)
-      .slice(0,3);
+    const scored = challenges.map(ch=>{
+      const r = scoreChallenge(ch, have, persona, ctx);
+      if(!r) return null;
+      return {
+        challengeId: ch.id,
+        title: ch.title || ch.id,
+        impact: r.impact,
+        effort: r.effort,
+        score: r.score,
+        explain: ch.explain || ch.explanation || null,
+        why: buildWhy(persona, ch, have, ctx),
+        tokens: baseTokens(r.impact, persona?.weighting, persona?.goals),
+        _raw: ch
+      };
+    }).filter(Boolean);
 
+    scored.sort((a,b)=> b.score - a.score);
+    let top3 = scored.slice(0,3);
+
+    // Optional AI one-liners
+    top3 = await augmentWithLLM(persona, top3);
+
+    // Persist recommendations (optional, for demo history)
     const bucketRef = doc(db,'recommendations', emailKey(email));
-    for (const it of ranked){
-      await setDoc(doc(bucketRef,'items', it.challengeId), { ...it, createdAt: serverTimestamp() }, { merge:true });
+    for (const it of top3){
+      const payload = {
+        challengeId: it.challengeId, title: it.title,
+        impact: it.impact, effort: it.effort, score: it.score,
+        tokens: it.tokens, why: it.why, explain: it.explain,
+        explain_llm: it.explain_llm || null,
+        createdAt: serverTimestamp()
+      };
+      await setDoc(doc(bucketRef,'items', it.challengeId), payload, { merge:true });
     }
-    return ranked;
+    return top3;
   }
 
-  // ===== Render Results =====
+  /* ---------------- Record Start/Later (no Auth) ---------------- */
+  async function recordAction({ email, challengeId, action, tokens = 0, impact = 0 }) {
+    return await addDoc(collection(db, 'actions'), {
+      email: email || null,
+      challengeId,
+      action,           // 'accept' | 'later'
+      tokens,
+      impact,
+      guestId,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  /* ---------------- Render ---------------- */
   function renderResults(email, items){
     $('#resultsEmail').textContent = `for: ${email}`;
     const list = $('#recsList'); list.innerHTML = '';
     if (!items.length){
       const empty = document.createElement('div');
       empty.className='card'; empty.textContent = 'No matches yet.';
-      list.appendChild(empty);
-      return;
+      list.appendChild(empty); return;
     }
     const maxImpact = Math.max(...items.map(i => Number(i.impact)||0), 1);
 
@@ -386,9 +482,8 @@
           <span class="kpi tok"><i>🎟️ Tokens</i> ${it.tokens}</span>
         </div>
         <div class="bar" aria-hidden="true" style="margin:6px 0 2px"><span style="width:${pct}%"></span></div>
-        <small class="help">About: ${it.explain || '—'}</small><br/>
+        <small class="help">${it.explain_llm ? `🤖 ${it.explain_llm}` : (it.explain ? `About: ${it.explain}` : '')}</small><br/>
         <small class="help">Why you: ${it.why || '—'}</small>
-        <div class="help" style="margin-top:6px">💡 ${it.nudge}</div>
         <div class="inline" style="gap:8px; margin-top:8px">
           <button class="btn small primary" data-accept="${it.challengeId}">Start</button>
           <button class="btn small" data-later="${it.challengeId}">Later</button>
@@ -397,52 +492,65 @@
       list.appendChild(d);
     });
 
-    // accept handler (writes to Firestore)
+    // Click handler for Start/Later (no { once: true } → multiple clicks allowed)
     list.addEventListener('click', async (e)=>{
       const startBtn = e.target.closest('button[data-accept]');
-      if (!startBtn) return;
-      const id = startBtn.getAttribute('data-accept');
+      const laterBtn = e.target.closest('button[data-later]');
+      const target   = startBtn || laterBtn;
+      if (!target) return;
+
+      const id   = target.getAttribute(startBtn ? 'data-accept' : 'data-later');
       const pick = items.find(x => x.challengeId === id);
       if (!pick) return;
-      await addDoc(collection(db,'acceptances'), {
-        email, challengeId: id, tokens: pick.tokens || 0, impact: pick.impact,
-        status: 'accepted', createdAt: serverTimestamp()
-      });
-      startBtn.textContent = 'Added ✓';
-      startBtn.disabled = true;
-    }, { once:true });
+
+      try {
+        await recordAction({
+          email,
+          challengeId: id,
+          action: startBtn ? 'accept' : 'later',
+          tokens: startBtn ? (pick.tokens || 0) : 0,
+          impact: pick.impact || 0
+        });
+        target.textContent = startBtn ? 'Added ✓' : 'Snoozed ✓';
+        target.disabled = true;
+      } catch (err) {
+        console.error(err);
+        alert('Could not record your action. Please check Firestore rules/connection (dev mode requires open rules).');
+      }
+    });
   }
 
-  // ===== Wire UI =====
-  initChips();
-  $('#backBtn').addEventListener('click', ()=> nav('setup'));
+  /* ---------------- Wire UI ---------------- */
+  function init(){
+    initChips();
+    $('#backBtn').addEventListener('click', ()=> nav('setup'));
+    $('#form').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!validate()) return;
+      const data = serialize();
+      const email = data.email;
 
-  $('#form').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    if(!validate()) return;
-    const data = serialize();
-    const email = data.email;
+      showLoader(true);
+      setStatus('Saving…','');
 
-    showLoader(true);
-    setStatus('Saving…','');
-
-    try{
-      await savePersona(data);
-      setStatus('Saved ✓','ok');
-      const items = await rankAndWriteRecommendations(email);
-      renderResults(email, items);
-      nav('results');
-    } catch(err){
-      console.warn(err);
-      setStatus('Error: '+(err.message||err),'fail');
-    } finally {
-      showLoader(false);
-    }
-  });
-
-  window.addEventListener('hashchange', ()=>{
-    if(location.hash === '#results') nav('results'); else nav('setup');
-  });
+      try{
+        await savePersona(data);
+        setStatus('Saved ✓','ok');
+        const items = await rankAndWriteRecommendations(email);
+        renderResults(email, items);
+        nav('results');
+      } catch(err){
+        console.warn(err);
+        setStatus('Error: '+(err.message||err),'fail');
+      } finally {
+        showLoader(false);
+      }
+    });
+    window.addEventListener('hashchange', ()=>{
+      if(location.hash === '#results') nav('results'); else nav('setup');
+    });
+  }
+  init();
 </script>
 </body>
 </html>
