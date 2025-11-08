@@ -18,7 +18,7 @@
   .brand{display:flex; gap:8px; align-items:center}
   .badge{background:var(--green); color:var(--green-ink); border-radius:999px; padding:4px 10px; font-weight:800; font-size:12px; box-shadow:var(--glow)}
   .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid var(--stroke); border-radius:999px; padding:6px 10px; font-size:12px}
-  .pill button{all:unset; cursor:pointer; font-weight:800; padding:4px 8px; border-radius:8px; border:1px solid var(--stroke)}
+  .pill button{all:unset; cursor:pointer; font-weight:800; padding:4px 8px; border-radius:8px; border:1.5px solid var(--stroke)}
   .help{color:var(--muted); font-size:12px}
 
   .card{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:16px; padding:14px; box-shadow:var(--glow)}
@@ -28,8 +28,9 @@
   .chip{appearance:none; border:1.5px solid var(--stroke); background:transparent; color:var(--ink); padding:10px 12px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; min-height:44px; min-width:44px; display:inline-flex; align-items:center; gap:8px}
   .chip[aria-checked="true"], .chip[aria-pressed="true"]{background:var(--green); color:var(--green-ink); border-color:var(--green)}
   .chip:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
-  input[type=email]{flex:1; background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); padding:12px 14px; border-radius:12px; font-size:15px; min-height:48px}
-  input[type=email]:focus{outline:3px solid var(--focus); outline-offset:2px}
+  input[type=email], select{flex:1; background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); padding:12px 14px; border-radius:12px; font-size:15px; min-height:48px}
+  input[type=email]:focus, select:focus{outline:3px solid var(--focus); outline-offset:2px}
+  label.switch{display:inline-flex; align-items:center; gap:8px; font-weight:700}
   .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
   .tools{position:sticky; bottom:8px; z-index:5; display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
   .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px}
@@ -42,13 +43,11 @@
   .status.fail{color:var(--red)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
 
-  /* Loader */
   .loader{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); backdrop-filter:blur(2px); z-index:50}
   .loader.show{display:grid}
   .spinner{width:48px; height:48px; border-radius:999px; border:4px solid var(--stroke); border-top-color:var(--green); animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Results */
   .grid{display:grid; gap:12px}
   .rec{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:14px; padding:14px; display:grid; gap:8px}
   .rec h3{margin:0 0 6px; font-size:16px}
@@ -73,9 +72,10 @@
       </div>
     </header>
 
-    <!-- ===== Setup (5 fields) ===== -->
+    <!-- ===== Setup ===== -->
     <main id="setupView">
       <form id="form" class="grid" novalidate>
+        <!-- Basics -->
         <section class="card">
           <fieldset role="group" aria-label="Basics">
             <legend>Basics</legend>
@@ -87,18 +87,64 @@
           </fieldset>
         </section>
 
+        <!-- Profile -->
         <section class="card">
-          <fieldset role="group" aria-label="Energy">
-            <legend>Heating</legend>
-            <div id="heating" class="row" role="radiogroup" aria-label="Heating" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="gas">Gas</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="district">District</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="heat_pump">Heat Pump</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="electric">Electric</button>
+          <fieldset role="group" aria-label="Profile">
+            <legend>Profile</legend>
+            <div class="inline" style="width:100%">
+              <label class="sr" for="region">Region</label>
+              <select id="region" aria-label="Region">
+                <option value="" selected disabled>Region (e.g., BE, BY, HH)</option>
+                <option>BE</option><option>BY</option><option>HH</option><option>NW</option><option>HE</option><option>BW</option><option>SN</option>
+              </select>
+              <label class="sr" for="ageBand">Age band</label>
+              <select id="ageBand" aria-label="Age band">
+                <option value="" selected disabled>Age band</option>
+                <option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option>
+              </select>
+            </div>
+            <div class="inline" style="width:100%">
+              <label class="sr" for="householdSize">Household size</label>
+              <select id="householdSize" aria-label="Household size">
+                <option value="" selected disabled>Household size</option>
+                <option>1</option><option>2</option><option>3</option><option>4+</option>
+              </select>
+              <label class="sr" for="housingType">Housing type</label>
+              <select id="housingType" aria-label="Housing type">
+                <option value="" selected disabled>Housing type</option>
+                <option>apartment</option><option>house</option><option>student</option><option>other</option>
+              </select>
             </div>
           </fieldset>
         </section>
 
+        <!-- Energy -->
+        <section class="card">
+          <fieldset role="group" aria-label="Energy">
+            <legend>Energy</legend>
+            <div>
+              <div class="help" style="margin:0 0 6px">Heating</div>
+              <div id="heating" class="row" role="radiogroup" aria-label="Heating" data-select="single">
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="gas">Gas</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="district">District</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="heat_pump">Heat Pump</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="electric">Electric</button>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <div class="help" style="margin:0 0 6px">Tariff</div>
+              <div id="tariff" class="row" role="radiogroup" aria-label="Tariff" data-select="single">
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="fixed">Fixed</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="dynamic">Dynamic</button>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label class="switch"><input id="smartMeter" type="checkbox" /> Smart meter</label>
+            </div>
+          </fieldset>
+        </section>
+
+        <!-- Devices -->
         <section class="card">
           <fieldset role="group" aria-label="Devices">
             <legend>Devices</legend>
@@ -108,10 +154,29 @@
               <button type="button" class="chip" aria-pressed="false" data-value="heat_pump">HP</button>
               <button type="button" class="chip" aria-pressed="false" data-value="smart_plugs">Plugs</button>
               <button type="button" class="chip" aria-pressed="false" data-value="smart_thermostat">Thermo</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="smart_meter">Smart meter</button>
             </div>
           </fieldset>
         </section>
 
+        <!-- Routine -->
+        <section class="card">
+          <fieldset role="group" aria-label="Routine">
+            <legend>Routine</legend>
+            <div>
+              <div class="help" style="margin:0 0 6px">Home hours</div>
+              <div id="homeHours" class="row" role="radiogroup" aria-label="Home hours" data-select="single">
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="Morning">Morning</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="Afternoon">Afternoon</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="Evening">Evening</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="Night">Night</button>
+                <button type="button" class="chip" role="radio" aria-checked="false" data-value="Mixed">Mixed</button>
+              </div>
+            </div>
+          </fieldset>
+        </section>
+
+        <!-- Interests -->
         <section class="card">
           <fieldset role="group" aria-label="Interests">
             <legend>Interests</legend>
@@ -121,22 +186,52 @@
               <button type="button" class="chip" aria-pressed="false" data-value="low-effort">Low Effort</button>
               <button type="button" class="chip" aria-pressed="false" data-value="cost-saving">Cost Saving</button>
               <button type="button" class="chip" aria-pressed="false" data-value="learning">Learning</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="sports-fitness">Sports & Fitness</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="technology">Technology</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="finance-investing">Finance & Investing</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="sustainability-environment">Sustainability & Environment</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="travel">Travel</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="food-cooking">Food & Cooking</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="science-research">Science & Research</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="fashion">Fashion</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="volunteering">Volunteering</button>
             </div>
           </fieldset>
         </section>
 
+        <!-- Goals & Constraints -->
         <section class="card">
-          <fieldset role="group" aria-label="Preferences">
-            <legend>Weighting</legend>
-            <div id="weighting" class="row" role="radiogroup" aria-label="Weighting" data-select="single">
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="balanced">Balanced</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="low-effort">Low Effort</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="high-impact">High Impact</button>
-              <button type="button" class="chip" role="radio" aria-checked="false" data-value="cost-saving">Cost Saving</button>
+          <fieldset role="group" aria-label="Goals & Constraints">
+            <legend>Goals & Constraints</legend>
+            <div class="help" style="margin:0 0 6px">Goals</div>
+            <div id="goals" class="row" role="group" aria-label="Goals" data-select="multi">
+              <button type="button" class="chip" aria-pressed="false" data-value="save-money">Save Money</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="reduce-co2">Reduce CO₂</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="get-rewards">Get Rewards</button>
+            </div>
+
+            <div class="help" style="margin:10px 0 6px">Constraints</div>
+            <div id="constraints" class="row" role="group" aria-label="Constraints" data-select="multi">
+              <button type="button" class="chip" aria-pressed="false" data-value="landlord">Landlord</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="time-poor">Time-poor</button>
+              <button type="button" class="chip" aria-pressed="false" data-value="low-budget">Low Budget</button>
             </div>
           </fieldset>
-          <div id="saveStatus" class="status" aria-live="polite"></div>
         </section>
+
+        <!-- Consent -->
+        <section class="card">
+          <fieldset role="group" aria-label="Consent">
+            <legend>Consent</legend>
+            <div class="inline" style="gap:16px">
+              <label><input type="checkbox" name="consent" value="photos"> Photos</label>
+              <label><input type="checkbox" name="consent" value="receipts"> Receipts</label>
+              <label><input type="checkbox" name="consent" value="appExports"> App Exports</label>
+            </div>
+          </fieldset>
+        </section>
+
+        <div id="saveStatus" class="status" aria-live="polite"></div>
 
         <div class="tools">
           <button type="submit" class="btn primary" id="submitBtn">Submit</button>
@@ -159,12 +254,10 @@
     </main>
   </div>
 
-  <!-- Loader -->
   <div id="loader" class="loader" aria-live="polite" aria-busy="true">
     <div class="spinner" aria-label="Matching…"></div>
   </div>
 
-<!-- ===== Scripts ===== -->
 <script type="module">
   /* ---------------- Firebase (no Auth) ---------------- */
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
@@ -185,7 +278,7 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // DEV guest id (no Auth). Requires wide-open Firestore rules during dev.
+  // DEV guest id
   const guestId =
     localStorage.getItem('guest_id') ||
     (() => {
@@ -195,12 +288,11 @@
     })();
 
   /* -------- OpenAI (direct fetch, no SDK) -------- */
-  // DEMO ONLY: paste a temporary key here or set via the pill in the header.
-  let OPENAI_KEY = 'OPENAI_API_KEY_HERE'; // <-- replace temporarily if you want
+  let OPENAI_KEY = 'OPENAI_API_KEY_HERE';
   const aiBadge = document.getElementById('aiBadge');
   function refreshAiBadge(){
-    const k = (OPENAI_KEY && !OPENAI_KEY.includes('HERE')) || localStorage.getItem('OPENAI_API_KEY');
-    aiBadge.textContent = k ? 'OpenAI: ON' : 'OpenAI: OFF';
+    const hasKey = (OPENAI_KEY && !OPENAI_KEY.includes('HERE')) || localStorage.getItem('OPENAI_API_KEY');
+    aiBadge.textContent = hasKey ? 'OpenAI: ON' : 'OpenAI: OFF';
   }
   document.getElementById('setKeyBtn').addEventListener('click', ()=>{
     const k = prompt('Enter OpenAI API Key (stored in localStorage for this demo)');
@@ -216,21 +308,15 @@
   if (localStorage.getItem('OPENAI_API_KEY')) OPENAI_KEY = localStorage.getItem('OPENAI_API_KEY');
   refreshAiBadge();
 
+  /* Small helper: short one-liners if needed elsewhere */
   async function openaiOneLiner(prompt){
     const key = localStorage.getItem('OPENAI_API_KEY') || OPENAI_KEY;
     if(!key || key.includes('HERE')) return null;
     try{
       const resp = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + key,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-5-nano',
-          input: prompt,
-          max_output_tokens: 60
-        })
+        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'gpt-5-nano', input: prompt, max_output_tokens: 60 })
       });
       const data = await resp.json();
       return (data.output_text || '').trim();
@@ -260,31 +346,47 @@
   }
   function valSingle(id){ const g = $('#'+id); const sel = g?.querySelector('[aria-checked="true"]'); return sel ? sel.dataset.value : null; }
   function valMulti(id){ const g = $('#'+id); return g ? $$('.chip[aria-pressed="true"]', g).map(b=>b.dataset.value) : []; }
+  function valSelect(id){ const el = $('#'+id); return el && el.value && !el.value.startsWith('Region') && !el.value.startsWith('Age') && !el.value.startsWith('Household') && !el.value.startsWith('Housing') ? el.value : null; }
+  function getConsent(){ return Array.from(document.querySelectorAll('input[name="consent"]:checked')).map(i=>i.value); }
   function emailKey(email){ return encodeURIComponent((email||'').trim().toLowerCase()); }
   function showLoader(on){ $('#loader').classList.toggle('show', !!on); }
   function nav(to){ const a=$('#setupView'), b=$('#resultsView'); if(to==='results'){ a.hidden=true; b.hidden=false; location.hash='#results'; } else { a.hidden=false; b.hidden=true; location.hash='#setup'; } }
-  function setStatus(msg, type){ const el = $('#saveStatus'); el.textContent = msg; el.className = 'status ' + (type||''); }
+  function setStatus(message, type){ const el = $('#saveStatus'); el.textContent = message; el.className = 'status ' + (type||''); }
 
   /* ---------------- Persona save/fetch ---------------- */
   function serialize(){
     const email = $('#email').value.trim();
+    const profile = {
+      region: valSelect('region'),
+      ageBand: valSelect('ageBand'),
+      householdSize: valSelect('householdSize'),
+      housingType: valSelect('housingType')
+    };
+    const energy = {
+      heating: valSingle('heating'),
+      tariff:  valSingle('tariff'),
+      smartMeter: !!$('#smartMeter')?.checked
+    };
+    const routine = { homeHours: valSingle('homeHours') };
     return {
-      email,
-      energy: { heating: valSingle('heating') },
+      email, profile, energy,
       devices: valMulti('devices'),
+      routine,
       interests: valMulti('interests'),
-      weighting: valSingle('weighting'),
+      goals: valMulti('goals'),
+      constraints: valMulti('constraints'),
+      consent: getConsent(),
       timestamp: new Date().toISOString()
     };
   }
   function validate(){
     const email = $('#email');
     const emailErr = $('#err-email');
-    let ok = true;
-    if(!email.value.trim()){ emailErr.textContent='Email required'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); ok=false; }
-    else if(!email.checkValidity()){ emailErr.textContent='Email invalid'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); ok=false; }
+    let okFlag = true;
+    if(!email.value.trim()){ emailErr.textContent='Email required'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); okFlag=false; }
+    else if(!email.checkValidity()){ emailErr.textContent='Email invalid'; emailErr.hidden=false; email.setAttribute('aria-invalid','true'); okFlag=false; }
     else { emailErr.hidden=true; email.removeAttribute('aria-invalid'); }
-    return ok;
+    return okFlag;
   }
   async function savePersona(data){
     const ref = await addDoc(collection(db,'interests'), { ...data, createdAt: serverTimestamp() });
@@ -303,104 +405,201 @@
     return snap.docs.map(d=>({ id:d.id, ...d.data() }));
   }
 
-  /* ---------------- Scoring + context ---------------- */
+  /* ---------------- Scoring (final formula per your rules) ---------------- */
+
+  // Build prereq feature set from everything EXCEPT region; `requires` will match these.
+  function toFeatureSet(p){
+    const feats = new Set([
+      ...(p?.devices || []),
+      p?.energy?.heating,
+      p?.energy?.smartMeter ? 'smart_meter' : null,
+      p?.energy?.tariff ? `tariff:${p.energy.tariff}` : null,
+      p?.routine?.homeHours ? `home:${p.routine.homeHours}` : null,
+      ...(p?.constraints || []),
+      p?.profile?.housingType ? `house:${p.profile.housingType}` : null,
+      p?.profile?.householdSize ? `hh:${p.profile.householdSize}` : null,
+    ].filter(Boolean));
+    return feats;
+  }
+
+  // Exact location match (challenge.region or challenge.regions). Missing → global (1).
+  function locationMatch(persona, ch){
+    const userRegion = persona?.profile?.region || null;
+    const r1 = ch.region || null;
+    const rMany = ch.regions || null;
+    if (!r1 && !rMany) return 1; // global
+    if (r1 && userRegion && r1 === userRegion) return 1;
+    if (Array.isArray(rMany) && userRegion && rMany.includes(userRegion)) return 1;
+    return 0;
+  }
+
+  // Tag alias to unify challenge tags with persona interests/goals
+  const TAG_ALIAS = {
+    'cost-saving':'save-money','low-effort':'low-effort','home-efficiency':'home-efficiency',
+    'sports-fitness':'sports-fitness','sustainability-environment':'sustainability-environment',
+    'finance-investing':'finance-investing','food-cooking':'food-cooking','science-research':'science-research',
+    'technology':'technology','mobility':'mobility','learning':'learning','travel':'travel',
+    'fashion':'fashion','volunteering':'volunteering','save-money':'save-money','reduce-co2':'reduce-co2','get-rewards':'get-rewards'
+  };
+  function normTag(t){ return TAG_ALIAS[t] || t; }
+
+  // Effort mapping when categorical
+  const EFFORT_MAP = { low:1, medium:2, high:3 };
+
+  // Weights: interests 0.55 (most important), prereqs 0.25, CO₂ 0.20, with capping + small effort penalty.
+  function scoreByFormula(persona, ch, have, maxImpact){
+    const loc = locationMatch(persona, ch);
+
+    // Interest pool = persona.interests + persona.goals (as requested)
+    const interestPool = new Set([...(persona?.interests || []), ...(persona?.goals || [])]);
+
+    const tags = (ch.tags || []).map(normTag);
+    const interestMatches = tags.filter(t => interestPool.has(t)).length;
+
+    const requires = ch.requires || [];
+    const prereqMatches = requires.filter(r => have.has(r)).length;
+
+    const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
+    const co2_norm = maxImpact > 0 ? Math.min(1, impact / maxImpact) : 0;
+
+    let effortNumeric = Number.isFinite(ch.effort) ? Number(ch.effort)
+                        : EFFORT_MAP[String(ch.effortLevel || '').toLowerCase()] || 2;
+
+    const interestTerm = 0.55 * Math.min(1, interestMatches * 0.2);
+    const prereqTerm   = 0.25 * Math.min(1, prereqMatches * 0.2);
+    const co2Term      = 0.20 * co2_norm;
+    const penalty      = 0.02 * effortNumeric;
+
+    const inner      = Math.max(0, interestTerm + prereqTerm + co2Term - penalty);
+    const finalScore = loc * inner;
+
+    return {
+      finalScore, loc, interestMatches, prereqMatches,
+      co2_norm, impact, effortNumeric,
+      interestTerm: Number(interestTerm.toFixed(3)),
+      prereqTerm: Number(prereqTerm.toFixed(3)),
+      co2Term: Number(co2Term.toFixed(3)),
+      penalty: Number(penalty.toFixed(3)),
+    };
+  }
+
+  function baseTokens(impact, goals=[]){
+    let t = Math.max(1, Math.ceil((Number(impact)||0) * 0.5));
+    if ((goals||[]).includes('get-rewards')) t += 1;
+    return t;
+  }
+
   function getContext(persona){
     const now = new Date(); const h = now.getHours(); const m = now.getMonth()+1;
     const home = persona?.routine?.homeHours;
     const nightPref = home === 'Night';
     const eveningPref = home === 'Evening';
+    const mixedPref = home === 'Mixed';
     return {
-      night: nightPref || (h>=22||h<6) || eveningPref,
-      midday: (h>=11 && h<=15),
+      night: nightPref || eveningPref || mixedPref || (h>=22||h<6),
+      midday: mixedPref || (h>=11 && h<=15),
       cold: (m<=3 || m>=11),
-      commuteDays: (persona?.routine?.commuteDays || []).length,
       tariff: persona?.energy?.tariff || null,
       smart: !!persona?.energy?.smartMeter
     };
   }
-  function toFeatureSet(p){
-    return new Set([
-      ...(p?.devices || []),
-      p?.energy?.heating,
-      p?.energy?.tariff ? `tariff:${p.energy.tariff}` : null,
-      p?.energy?.smartMeter ? 'smart_meter' : null,
-      ...(p?.interests || []),
-      ...(p?.goals || []),
-      ...(p?.constraints || []),
-      p?.weighting
-    ].filter(Boolean));
-  }
-  function baseTokens(impact, weighting, goals=[]){
-    const mult = weighting==='high-impact' ? 0.6 : weighting==='low-effort' ? 0.45 : 0.5;
-    let t = Math.max(1, Math.ceil((Number(impact)||0) * mult));
-    if ((goals||[]).includes('get-rewards')) t += 1;
-    return t;
-  }
-  function buildWhy(persona, ch, have, ctx){
-    const req  = ch.requires || [];
-    const tags = ch.tags || [];
-    const bits = [];
-    if (req.includes('ev') && have.has('ev')) bits.push(ctx.night ? 'EV + night → cleaner kWh.' : 'EV owner: schedule off-peak.');
-    if (req.includes('pv') && have.has('pv')) bits.push(ctx.midday ? 'Use midday PV to offset grid.' : 'Shift to sunny hours.');
-    if (ch.category==='heating' && ctx.cold) bits.push('Cold season: heating cuts matter more.');
-    if (ctx.tariff === 'dynamic' && tags.includes('electricity')) bits.push('Dynamic tariff: time-shift saves cost/CO₂.');
-    if (ctx.smart && (ch.evidence||[]).some(e => ['meter','smart_plug'].includes(e))) bits.push('Smart meter/plugs: easy verification.');
-    if ((persona?.goals||[]).includes('save-money') && tags.includes('cost-saving')) bits.push('Matches your cost goal.');
-    if ((persona?.goals||[]).includes('reduce-co2') && (ch.impactKgCO2||0)>=15) bits.push('High CO₂ impact matches your goal.');
-    if ((persona?.constraints||[]).includes('landlord') && req.some(r => ['pv','heat_pump'].includes(r))) bits.push('Note: may need landlord OK.');
-    if (ch.category==='mobility' && ctx.commuteDays>0) bits.push('Commute pattern: mobility swap is feasible.');
-    return bits.join(' • ') || 'Good fit for your setup and goals.';
-  }
-  function scoreChallenge(ch, have, persona, ctx){
-    const requires = ch.requires || [];
-    if (requires.some(r => !have.has(r))) return null;
+
+  /* ---------- Rich "About" + user-specific "Why you" ---------- */
+
+  const EFFORT_TEXT = { 1: 'low', 2: 'medium', 3: 'high' };
+
+  function formatAbout(ch){
     const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
-    const effort = Number(ch.effort ?? 1);
-    const tags   = ch.tags || [];
-    const goals  = new Set(persona?.goals || []);
-    const cons   = new Set(persona?.constraints || []);
-    let rel = 0;
-    requires.forEach(r => { if (have.has(r)) rel += 2; });
-    tags.forEach(t => { if (have.has(t)) rel += 1; });
-    if (persona?.weighting === 'low-effort')  rel += (effort<=2 ? 2 : -1);
-    if (persona?.weighting === 'high-impact') rel += (impact>=15 ? 2 : 0);
-    if (persona?.weighting === 'cost-saving' && tags.includes('cost-saving')) rel += 2;
-    if (goals.has('reduce-co2') && impact>=15) rel += 2;
-    if (goals.has('save-money') && tags.includes('cost-saving')) rel += 2;
-    if (ctx.tariff==='dynamic' && tags.includes('electricity')) rel += 1;
-    if (requires.includes('ev') && ctx.night) rel += 2;
-    if (requires.includes('pv') && ctx.midday) rel += 2;
-    if (ch.category==='heating' && ctx.cold) rel += 2;
-    if (ch.category==='mobility' && ctx.commuteDays>0) rel += Math.min(3, 1 + Math.floor(ctx.commuteDays/2));
-    if (cons.has('landlord') && requires.some(r => ['pv','heat_pump'].includes(r))) rel -= 3;
-    const score = (rel * impact) - (0.7 * effort);
-    return { impact, effort, score };
+    const effortNum = Number.isFinite(ch.effort) ? ch.effort
+                    : ({low:1, medium:2, high:3}[String(ch.effortLevel||'').toLowerCase()] || 2);
+    const effort = EFFORT_TEXT[effortNum] || 'medium';
+    const ev = (ch.evidence || []).join(', ') || '—';
+    const base = ch.explain || ch.explanation || ch.title || 'This challenge reduces energy use and emissions.';
+    return `${base} Impact ≈ ${Math.round(impact)} kg CO₂. Effort: ${effort}. Evidence: ${ev}.`;
   }
 
-  /* ---------------- LLM explanation ---------------- */
-  function personaToPlain(p){
-    return [
-      p?.weighting ? `preference=${p.weighting}` : '',
-      p?.energy?.heating ? `heating=${p.energy.heating}` : '',
-      (p?.devices||[]).length ? `devices=${(p.devices||[]).join('|')}` : '',
-      (p?.interests||[]).length ? `interests=${(p.interests||[]).join('|')}` : '',
-      (p?.goals||[]).length ? `goals=${(p.goals||[]).join('|')}` : '',
-      (p?.constraints||[]).length ? `constraints=${(p.constraints||[]).join('|')}` : ''
-    ].filter(Boolean).join('; ');
-  }
-  async function llmExplain(persona, ch){
-    const prompt = `Persona: ${personaToPlain(persona)}
-Challenge: ${ch.title} — ${ch.explain || ch.explanation || ''}. Requires: ${(ch.requires||[]).join(', ')||'none'}. Tags: ${(ch.tags||[]).join(', ')}.
-Task: In <=22 words, write a clear, friendly “why this fits you” line. No emojis. Start directly.`;
-    return await openaiOneLiner(prompt);
-  }
-  async function augmentWithLLM(persona, top3){
-    const outs = await Promise.all(top3.map(it => llmExplain(persona, it._raw)));
-    outs.forEach((txt, i)=> { if(txt) top3[i].explain_llm = txt; });
-    return top3;
+  const LABELS = {
+    'mobility':'Mobility','home-efficiency':'Home Efficiency','low-effort':'Low Effort',
+    'cost-saving':'Cost Saving','learning':'Learning','sports-fitness':'Sports & Fitness',
+    'technology':'Technology','finance-investing':'Finance & Investing',
+    'sustainability-environment':'Sustainability & Environment','travel':'Travel',
+    'food-cooking':'Food & Cooking','science-research':'Science & Research',
+    'fashion':'Fashion','volunteering':'Volunteering',
+    'save-money':'Save Money','reduce-co2':'Reduce CO₂','get-rewards':'Get Rewards'
+  };
+
+  function buildWhyPersonal(persona, ch, have, ctx, s){
+    const region = persona?.profile?.region;
+    const interestPool = new Set([...(persona?.interests||[]), ...(persona?.goals||[])]);
+    const tags = (ch.tags||[]);
+    const requires = (ch.requires||[]);
+    const matchedInterests = tags.filter(t => interestPool.has(t)).map(t => LABELS[t] || t);
+    const matchedPrereqs   = requires.filter(r => have.has(r));
+
+    const bits = [];
+
+    if (matchedInterests.length){
+      const top = matchedInterests.slice(0,3).join(', ');
+      bits.push(`You selected ${top}, which aligns directly with this challenge.`);
+    } else if ((persona?.goals||[]).length){
+      bits.push(`This supports your goals (${(persona.goals||[]).map(g=>LABELS[g]||g).slice(0,2).join(', ')}).`);
+    }
+
+    if (matchedPrereqs.length){
+      bits.push(`Your setup (${matchedPrereqs.join(', ')}) means you can do this with minimal friction.`);
+    }
+    if (ctx.tariff==='dynamic' && (tags.includes('electricity') || ch.category==='electricity')){
+      bits.push(`With a dynamic tariff, shifting use to cheaper hours lowers both costs and CO₂.`);
+    }
+    if ((ch.requires||[]).includes('ev') && (ctx.night || persona?.routine?.homeHours==='Night')){
+      bits.push(`Your night routine makes scheduled charging a natural fit.`);
+    }
+    if ((ch.requires||[]).includes('pv') && ctx.midday){
+      bits.push(`Your midday availability lets you lean on PV generation.`);
+    }
+
+    if ((ch.region || (Array.isArray(ch.regions) && ch.regions.length)) && region){
+      bits.push(`Available in your region (${region}).`);
+    }
+    if ((persona?.constraints||[]).includes('landlord') && requires.some(r=>['pv','heat_pump'].includes(r))){
+      bits.push(`Heads-up: this may require landlord approval.`);
+    }
+
+    const effortNum = Number.isFinite(ch.effort) ? ch.effort
+                    : ({low:1, medium:2, high:3}[String(ch.effortLevel||'').toLowerCase()] || 2);
+    const effort = EFFORT_TEXT[effortNum] || 'medium';
+    const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
+    bits.push(`Estimated impact ≈ ${Math.round(impact)} kg CO₂ with ${effort} effort.`);
+
+    return bits.join(' ');
   }
 
-  /* ---------------- Rank + write recs ---------------- */
+  async function llmPersonalWhy(persona, ch, s){
+    const key = localStorage.getItem('OPENAI_API_KEY') || (typeof OPENAI_KEY!=='undefined' ? OPENAI_KEY : '');
+    if(!key || String(key).includes('HERE')) return null;
+    const prompt = `User profile: ${[
+      persona?.profile?.region ? `region=${persona.profile.region}` : '',
+      `interests=${(persona?.interests||[]).join('|')}`,
+      `goals=${(persona?.goals||[]).join('|')}`,
+      (persona?.devices||[]).length ? `devices=${persona.devices.join('|')}` : '',
+      persona?.energy?.tariff ? `tariff=${persona.energy.tariff}` : '',
+      persona?.routine?.homeHours ? `homeHours=${persona.routine.homeHours}` : '',
+      (persona?.constraints||[]).length ? `constraints=${persona.constraints.join('|')}` : ''
+    ].filter(Boolean).join('; ')}
+Challenge: ${ch.title}. Tags=${(ch.tags||[]).join(', ')}. Requires=${(ch.requires||[]).join(', ')||'none'}. Impact≈${Math.round(Number(ch.impact ?? ch.impactKgCO2 ?? 0))} kg CO2. Effort=${String(ch.effortLevel||EFFORT_TEXT[ch.effort||2]||'medium')}.
+Write a single friendly paragraph (40–60 words) explaining why this challenge uniquely fits this user. Reference one or two of their interests/goals and any matching devices or routine. Mention impact and effort. No emojis.`;
+    try{
+      const resp = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'gpt-5-nano', input: prompt, max_output_tokens: 140 })
+      });
+      const data = await resp.json();
+      return (data.output_text || '').trim() || null;
+    }catch(e){ console.warn('LLM why failed', e); return null; }
+  }
+
+  /* ---------------- Rank + write recs (console.table) ---------------- */
   async function rankAndWriteRecommendations(email){
     const persona = await fetchLatestPersonaByEmail(email);
     if (!persona) throw new Error('No persona for this email');
@@ -409,36 +608,67 @@ Task: In <=22 words, write a clear, friendly “why this fits you” line. No em
     const have = toFeatureSet(persona);
     const ctx  = getContext(persona);
 
-    const scored = challenges.map(ch=>{
-      const r = scoreChallenge(ch, have, persona, ctx);
-      if(!r) return null;
+    const maxImpact = Math.max(...challenges.map(ch => Number(ch.impact ?? ch.impactKgCO2 ?? 0)), 0);
+
+    const rowsForConsole = [];
+    const scored = await Promise.all(challenges.map(async ch=>{
+      const s = scoreByFormula(persona, ch, have, maxImpact);
+      rowsForConsole.push({
+        challengeId: ch.id,
+        title: ch.title || ch.id,
+        region: ch.region || (Array.isArray(ch.regions) ? ch.regions.join('|') : '—'),
+        location: s.loc,
+        interestMatches: s.interestMatches,
+        prereqMatches: s.prereqMatches,
+        co2_norm: Number(s.co2_norm.toFixed(3)),
+        impactKgCO2: s.impact,
+        interestTerm: s.interestTerm,
+        prereqTerm: s.prereqTerm,
+        co2Term: s.co2Term,
+        penalty: s.penalty,
+        finalScore: Number(s.finalScore.toFixed(4))
+      });
+
+      if (s.finalScore <= 0) return null;
+
+      const impact = Number(ch.impact ?? ch.impactKgCO2 ?? 0);
+      const effort = Number.isFinite(ch.effort) ? Number(ch.effort)
+                    : ( {low:1, medium:2, high:3}[String(ch.effortLevel||'').toLowerCase()] || 2 );
+
+      // Richer copy
+      const about_rich = formatAbout(ch);
+      const why_personal_fallback = buildWhyPersonal(persona, ch, have, ctx, s);
+      const why_personal_llm = await llmPersonalWhy(persona, ch, s);
+      const why_final = (why_personal_llm && why_personal_llm.length > 20) ? why_personal_llm : why_personal_fallback;
+
       return {
         challengeId: ch.id,
         title: ch.title || ch.id,
-        impact: r.impact,
-        effort: r.effort,
-        score: r.score,
+        impact,
+        effort,
+        score: s.finalScore,                // <-- your score used for ranking
+        about_rich,
+        why_personal: why_final,
         explain: ch.explain || ch.explanation || null,
-        why: buildWhy(persona, ch, have, ctx),
-        tokens: baseTokens(r.impact, persona?.weighting, persona?.goals),
+        tokens: baseTokens(impact, persona?.goals),
         _raw: ch
       };
-    }).filter(Boolean);
+    })).then(arr => arr.filter(Boolean));
+
+    console.group(`Challenge scores for ${email} (region=${persona?.profile?.region || 'n/a'})`);
+    console.table(rowsForConsole.sort((a,b)=> b.finalScore - a.finalScore));
+    console.groupEnd();
 
     scored.sort((a,b)=> b.score - a.score);
-    let top3 = scored.slice(0,3);
+    const top3 = scored.slice(0,3);
 
-    // Optional AI one-liners
-    top3 = await augmentWithLLM(persona, top3);
-
-    // Persist recommendations (optional, for demo history)
+    // Persist top 3 (optional)
     const bucketRef = doc(db,'recommendations', emailKey(email));
     for (const it of top3){
       const payload = {
         challengeId: it.challengeId, title: it.title,
         impact: it.impact, effort: it.effort, score: it.score,
-        tokens: it.tokens, why: it.why, explain: it.explain,
-        explain_llm: it.explain_llm || null,
+        tokens: it.tokens, why: it.why_personal, about: it.about_rich,
         createdAt: serverTimestamp()
       };
       await setDoc(doc(bucketRef,'items', it.challengeId), payload, { merge:true });
@@ -451,9 +681,7 @@ Task: In <=22 words, write a clear, friendly “why this fits you” line. No em
     return await addDoc(collection(db, 'actions'), {
       email: email || null,
       challengeId,
-      action,           // 'accept' | 'later'
-      tokens,
-      impact,
+      action, tokens, impact,
       guestId,
       createdAt: serverTimestamp()
     });
@@ -482,8 +710,8 @@ Task: In <=22 words, write a clear, friendly “why this fits you” line. No em
           <span class="kpi tok"><i>🎟️ Tokens</i> ${it.tokens}</span>
         </div>
         <div class="bar" aria-hidden="true" style="margin:6px 0 2px"><span style="width:${pct}%"></span></div>
-        <small class="help">${it.explain_llm ? `🤖 ${it.explain_llm}` : (it.explain ? `About: ${it.explain}` : '')}</small><br/>
-        <small class="help">Why you: ${it.why || '—'}</small>
+        <small class="help">About: ${it.about_rich}</small><br/>
+        <small class="help">Why you: ${it.why_personal}</small>
         <div class="inline" style="gap:8px; margin-top:8px">
           <button class="btn small primary" data-accept="${it.challengeId}">Start</button>
           <button class="btn small" data-later="${it.challengeId}">Later</button>
@@ -492,7 +720,6 @@ Task: In <=22 words, write a clear, friendly “why this fits you” line. No em
       list.appendChild(d);
     });
 
-    // Click handler for Start/Later (no { once: true } → multiple clicks allowed)
     list.addEventListener('click', async (e)=>{
       const startBtn = e.target.closest('button[data-accept]');
       const laterBtn = e.target.closest('button[data-later]');
