@@ -5,58 +5,162 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Green Impact Wallet — Persona (Client-only, no-Auth, OpenAI optional)</title>
 <style>
+  /* ===== Light, minimalist theme with purple highlights ===== */
   :root{
-    --bg:#0b0e11; --card:#131820; --ink:#f7fafc; --muted:#a8b3bf;
-    --green:#22c55e; --green-ink:#062b16; --red:#ef4444; --focus:#93c5fd;
-    --stroke:#243244; --glow:0 10px 40px rgba(34,197,94,.15);
+    --bg:#f7f7fb;            /* app background */
+    --card:#ffffff;          /* cards */
+    --ink:#111827;           /* main text */
+    --muted:#6b7280;         /* secondary text */
+    --primary:#7c3aed;       /* purple highlight */
+    --primary-ink:#ffffff;   /* text on purple */
+    --focus:#c4b5fd;         /* focus ring */
+    --stroke:#e5e7eb;        /* borders */
+    --success:#16a34a;       /* success */
+    --danger:#ef4444;        /* danger */
+    --bar-bg:#eef2ff;        /* bars background */
+    --bar-grad:linear-gradient(90deg,#7c3aed,#8b5cf6);
+    --glow:0 10px 40px rgba(124,58,237,.15);
   }
-  html,body{height:100%}
-  body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased}
-  .wrap{max-width:900px; margin:0 auto; padding:16px}
-  header{display:flex; align-items:center; justify-content:space-between; margin:2px 0 14px}
-  header h1{font-size:18px; margin:0; font-weight:800; letter-spacing:.2px}
-  .brand{display:flex; gap:8px; align-items:center}
-  .badge{background:var(--green); color:var(--green-ink); border-radius:999px; padding:4px 10px; font-weight:800; font-size:12px; box-shadow:var(--glow)}
-  .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid var(--stroke); border-radius:999px; padding:6px 10px; font-size:12px}
-  .pill button{all:unset; cursor:pointer; font-weight:800; padding:4px 8px; border-radius:8px; border:1.5px solid var(--stroke)}
-  .help{color:var(--muted); font-size:12px}
 
-  .card{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:16px; padding:14px; box-shadow:var(--glow)}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    font-size:16px;
+  }
+
+  .wrap{max-width:1100px; margin:0 auto; padding:24px}
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:4px 0 18px
+  }
+  header h1{font-size:24px; margin:0; font-weight:900; letter-spacing:.2px}
+  .brand{display:flex; gap:10px; align-items:center}
+  .badge{
+    background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+    color:var(--primary-ink);
+    border-radius:14px;
+    padding:6px 12px; font-weight:900; font-size:12px; box-shadow:var(--glow)
+  }
+
+  .pill{
+    display:inline-flex; gap:10px; align-items:center;
+    border:1.5px solid var(--stroke); border-radius:999px;
+    padding:8px 12px; font-size:13px; background:#fff
+  }
+  .pill button{
+    all:unset; cursor:pointer; font-weight:800; padding:6px 10px;
+    border-radius:10px; border:1.5px solid var(--stroke); color:#4b5563;
+  }
+  .pill button:hover{border-color:#d1d5db}
+  #aiBadge{font-weight:900}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--stroke);
+    border-radius:18px; padding:18px;
+    box-shadow:0 1px 2px rgba(0,0,0,.04), var(--glow);
+  }
   fieldset{border:0; margin:0; padding:0}
-  legend{font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin:0 0 8px}
-  .row{display:flex; flex-wrap:wrap; gap:12px}
-  .chip{appearance:none; border:1.5px solid var(--stroke); background:transparent; color:var(--ink); padding:10px 12px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; min-height:44px; min-width:44px; display:inline-flex; align-items:center; gap:8px}
-  .chip[aria-checked="true"], .chip[aria-pressed="true"]{background:var(--green); color:var(--green-ink); border-color:var(--green)}
+  legend{
+    font-size:13px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted);
+    margin:0 0 10px; font-weight:800
+  }
+
+  .row{display:flex; flex-wrap:wrap; gap:14px}
+  .chip{
+    appearance:none; border:1.5px solid var(--stroke); background:#fff; color:var(--ink);
+    padding:12px 14px; border-radius:999px; font-weight:800; font-size:15px; cursor:pointer;
+    min-height:48px; min-width:48px; display:inline-flex; align-items:center; gap:8px;
+    transition:transform .06s ease, background .12s, color .12s, border-color .12s;
+  }
+  .chip:hover{transform:translateY(-1px)}
+  .chip[aria-checked="true"], .chip[aria-pressed="true"]{
+    background:var(--primary); color:var(--primary-ink); border-color:transparent;
+  }
   .chip:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
-  input[type=email], select{flex:1; background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); padding:12px 14px; border-radius:12px; font-size:15px; min-height:48px}
+
+  input[type=email], select{
+    flex:1; background:#fff; border:1.5px solid var(--stroke); color:var(--ink);
+    padding:14px 16px; border-radius:14px; font-size:16px; min-height:52px
+  }
   input[type=email]:focus, select:focus{outline:3px solid var(--focus); outline-offset:2px}
-  label.switch{display:inline-flex; align-items:center; gap:8px; font-weight:700}
-  .inline{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-  .tools{position:sticky; bottom:8px; z-index:5; display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
-  .btn{background:#0c1117; border:1.5px solid var(--stroke); color:var(--ink); border-radius:12px; padding:12px 14px; font-weight:900; cursor:pointer; min-height:48px}
-  .btn.primary{background:var(--green); color:var(--green-ink); border-color:var(--green)}
-  .btn.small{padding:8px 10px; font-weight:800; font-size:13px; border-radius:10px}
-  .error{color:var(--red); font-weight:800; font-size:12px; margin-top:6px}
+
+  label.switch{display:inline-flex; align-items:center; gap:10px; font-weight:800}
+
+  .inline{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .tools{position:sticky; bottom:12px; z-index:5; display:flex; gap:10px; justify-content:flex-end; margin-top:14px}
+
+  .btn{
+    background:#fff; border:1.5px solid var(--stroke); color:var(--ink);
+    border-radius:14px; padding:12px 16px; font-weight:900; cursor:pointer; min-height:48px
+  }
+  .btn.primary{
+    background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+    color:var(--primary-ink); border-color:transparent; box-shadow:var(--glow)
+  }
+  .btn.small{padding:9px 12px; font-weight:800; font-size:14px; border-radius:12px}
+
+  .help{color:var(--muted); font-size:13px}
+  .error{color:var(--danger); font-weight:800; font-size:13px; margin-top:6px}
   .error[hidden]{display:none}
-  .status{font-size:12px; font-weight:800; margin-top:6px}
-  .status.ok{color:var(--green)}
-  .status.fail{color:var(--red)}
+  .status{font-size:13px; font-weight:900; margin-top:8px}
+  .status.ok{color:var(--success)}
+  .status.fail{color:var(--danger)}
   .sr{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0}
 
-  .loader{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); backdrop-filter:blur(2px); z-index:50}
+  .loader{position:fixed; inset:0; display:none; place-items:center; background:rgba(255,255,255,.55); backdrop-filter:blur(2px); z-index:50}
   .loader.show{display:grid}
-  .spinner{width:48px; height:48px; border-radius:999px; border:4px solid var(--stroke); border-top-color:var(--green); animation:spin 1s linear infinite}
+  .spinner{
+    width:52px; height:52px; border-radius:999px;
+    border:4px solid #e9d5ff; border-top-color:#7c3aed; animation:spin 1s linear infinite
+  }
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .grid{display:grid; gap:12px}
-  .rec{background:linear-gradient(180deg,#121926,#0f141b); border:1px solid var(--stroke); border-radius:14px; padding:14px; display:grid; gap:8px}
-  .rec h3{margin:0 0 6px; font-size:16px}
-  .kpi {display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); font-size:12px}
-  .kpi.co2 {background:linear-gradient(90deg,#1f8a4c33,#1f8a4c0f)}
-  .kpi.eff {background:linear-gradient(90deg,#8a6a1f33,#8a6a1f0f)}
-  .kpi.tok {background:linear-gradient(90deg,#22c55e44,#22c55e1a)}
-  .bar {height:6px; background:#0e141b; border:1px solid var(--stroke); border-radius:999px; overflow:hidden}
-  .bar > span {display:block; height:100%; background:linear-gradient(90deg,#22c55e,#86efac)}
+  .grid{display:grid; gap:14px}
+
+  .rec{
+    background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:16px;
+    display:grid; gap:10px
+  }
+  .rec h3{margin:0 0 6px; font-size:18px}
+
+  .kpi{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+    border:1px solid var(--stroke); font-size:12px; background:#fff
+  }
+  .kpi.co2 {background:#f0fdf4; border-color:#dcfce7}
+  .kpi.eff {background:#f5f3ff; border-color:#ede9fe}
+  .kpi.tok {background:#eef2ff; border-color:#e0e7ff}
+
+  .bar{height:8px; background:var(--bar-bg); border:1px solid #e0e7ff; border-radius:999px; overflow:hidden}
+  .bar > span{display:block; height:100%; background:var(--bar-grad)}
+
+  /* ====== Highlighted callouts for About & Why you ====== */
+  .callout{
+    border:1.5px solid var(--stroke);
+    border-left:6px solid var(--primary);
+    border-radius:12px;
+    padding:12px 14px;
+    line-height:1.5;
+    font-size:14px;
+    background:#fbfaff;
+  }
+  .callout .label{
+    display:inline-flex; align-items:center; gap:8px;
+    font-weight:900; text-transform:uppercase; letter-spacing:.06em;
+    font-size:12px; color:#5b21b6;
+    margin-bottom:4px;
+  }
+  .callout.about{ background:#f5f3ff; border-color:#ede9fe; }
+  .callout.why  { background:#eef2ff; border-color:#e0e7ff; }
+  .callout .text{ color:#1f2937; }
+
+  /* Nice section spacing */
+  main section.card{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -68,7 +172,7 @@
       <div class="pill" id="aiPill">
         <span id="aiBadge">OpenAI: OFF</span>
         <button id="setKeyBtn" title="Set OpenAI API key">Set key</button>
-        <button id="clearKeyBtn" title="Clear key">Clear</button>
+        <button id="clearKeyBtn" title="Clear">Clear</button>
       </div>
     </header>
 
@@ -79,7 +183,7 @@
         <section class="card">
           <fieldset role="group" aria-label="Basics">
             <legend>Basics</legend>
-            <div class="inline">
+            <div class="inline" style="width:100%">
               <label for="email" class="sr">Email</label>
               <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email*" aria-describedby="err-email" required />
             </div>
@@ -243,7 +347,7 @@
     <main id="resultsView" hidden>
       <section class="card">
         <div class="inline" style="justify-content:space-between; align-items:center">
-          <strong>Top 3 Challenges</strong>
+          <strong style="font-size:18px">Top 3 Challenges</strong>
           <div class="inline">
             <button id="backBtn" class="btn" type="button">Back</button>
           </div>
@@ -635,7 +739,7 @@ Write a single friendly paragraph (40–60 words) explaining why this challenge 
       const effort = Number.isFinite(ch.effort) ? Number(ch.effort)
                     : ( {low:1, medium:2, high:3}[String(ch.effortLevel||'').toLowerCase()] || 2 );
 
-      // Richer copy
+      // Rich copy
       const about_rich = formatAbout(ch);
       const why_personal_fallback = buildWhyPersonal(persona, ch, have, ctx, s);
       const why_personal_llm = await llmPersonalWhy(persona, ch, s);
@@ -646,7 +750,7 @@ Write a single friendly paragraph (40–60 words) explaining why this challenge 
         title: ch.title || ch.id,
         impact,
         effort,
-        score: s.finalScore,                // <-- your score used for ranking
+        score: s.finalScore,
         about_rich,
         why_personal: why_final,
         explain: ch.explain || ch.explanation || null,
@@ -701,18 +805,27 @@ Write a single friendly paragraph (40–60 words) explaining why this challenge 
     items.forEach(it=>{
       const d = document.createElement('div');
       d.className = 'rec';
-      const pct = Math.max(5, Math.round((Number(it.impact)||0) / maxImpact * 100));
+      const pct = Math.max(6, Math.round((Number(it.impact)||0) / maxImpact * 100));
       d.innerHTML = `
         <h3>${it.title}</h3>
         <div class="inline" style="gap:8px; flex-wrap:wrap">
-          <span class="kpi co2"><i>🌱 CO₂↓</i> ${Math.round(it.impact)} kg</span>
-          <span class="kpi eff"><i>⚙️ Effort</i> ${it.effort}</span>
-          <span class="kpi tok"><i>🎟️ Tokens</i> ${it.tokens}</span>
+          <span class="kpi co2">🌱 CO₂↓ ${Math.round(it.impact)} kg</span>
+          <span class="kpi eff">⚙️ Effort ${it.effort}</span>
+          <span class="kpi tok">🎟️ Tokens ${it.tokens}</span>
         </div>
-        <div class="bar" aria-hidden="true" style="margin:6px 0 2px"><span style="width:${pct}%"></span></div>
-        <small class="help">About: ${it.about_rich}</small><br/>
-        <small class="help">Why you: ${it.why_personal}</small>
-        <div class="inline" style="gap:8px; margin-top:8px">
+        <div class="bar" aria-hidden="true" style="margin:8px 0 4px"><span style="width:${pct}%"></span></div>
+
+        <div class="callout about" role="note" aria-label="About this challenge">
+          <div class="label">ℹ️ About</div>
+          <div class="text">${it.about_rich}</div>
+        </div>
+
+        <div class="callout why" role="note" aria-label="Why this fits you">
+          <div class="label">⭐ Why you</div>
+          <div class="text">${it.why_personal}</div>
+        </div>
+
+        <div class="inline" style="gap:10px; margin-top:8px">
           <button class="btn small primary" data-accept="${it.challengeId}">Start</button>
           <button class="btn small" data-later="${it.challengeId}">Later</button>
         </div>
